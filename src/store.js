@@ -64,12 +64,15 @@ export class Store {
     // apply plugins
     plugins.forEach(plugin => plugin(this))
 
+    // 是否开启开发工具调试
     const useDevtools = options.devtools !== undefined ? options.devtools : Vue.config.devtools
     if (useDevtools) {
       devtoolPlugin(this)
     }
   }
 
+
+  // 获取整个store的状态,只读
   get state () {
     return this._vm._data.$$state
   }
@@ -509,6 +512,7 @@ function unifyObjectStyle (type, payload, options) {
 }
 
 export function install (_Vue) {
+  // 不得重复添加
   if (Vue && _Vue === Vue) {
     if (process.env.NODE_ENV !== 'production') {
       console.error(

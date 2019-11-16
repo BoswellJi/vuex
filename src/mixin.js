@@ -20,9 +20,12 @@ export default function (Vue) {
    */
 
   function vuexInit () {
+    // 获取根组件的选项
     const options = this.$options
     // store injection
+    // 是否 存在store
     if (options.store) {
+      
       this.$store = typeof options.store === 'function'
         ? options.store()
         : options.store
