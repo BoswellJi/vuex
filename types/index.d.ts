@@ -7,6 +7,7 @@ import { mapState, mapMutations, mapGetters, mapActions, createNamespacedHelpers
 
 export * from "./helpers";
 
+// 模块类型定义
 export declare class Store<S> {
   constructor(options: StoreOptions<S>);
 
@@ -137,6 +138,7 @@ export interface ModuleTree<R> {
   [key: string]: Module<any, R>;
 }
 
+// 定义全局常量
 declare const _default: {
   Store: typeof Store;
   install: typeof install;

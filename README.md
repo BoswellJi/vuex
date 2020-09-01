@@ -1,5 +1,5 @@
 # Vuex [![Build Status](https://circleci.com/gh/vuejs/vuex/tree/dev.png?style=shield)](https://circleci.com/gh/vuejs/vuex)
-
+> vue.js的中心化的状态管理工具
 > Centralized State Management for Vue.js.
 
 <p align="center">
