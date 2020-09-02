@@ -48,14 +48,8 @@ export default class ModuleCollection {
     update([], this.root, rawRootModule)
   }
 
-  /**
-   * 注册 store 模块
-   * @param {*} path 子模块名数组
-   * @param {*} rawModule options 
-   * @param {*} runtime false
-   */
-  register(path, rawModule, runtime = true) {
-    if (process.env.NODE_ENV !== 'production') {
+  register (path, rawModule, runtime = true) {
+    if (__DEV__) {
       assertRawModule(path, rawModule)
     }
     // 创建新模块 参数：options 
@@ -91,21 +85,35 @@ export default class ModuleCollection {
     const parent = this.get(path.slice(0, -1))
     // 从最后一个模块名
     const key = path[path.length - 1]
-    // 获取模块的子模块，
-    if (!parent.getChild(key).runtime) return
-    // 删除这个模块，即取消注册
+    const child = parent.getChild(key)
+
+    if (!child) {
+      if (__DEV__) {
+        console.warn(
+          `[vuex] trying to unregister module '${key}', which is ` +
+          `not registered`
+        )
+      }
+      return
+    }
+
+    if (!child.runtime) {
+      return
+    }
+
     parent.removeChild(key)
+  }
+
+  isRegistered (path) {
+    const parent = this.get(path.slice(0, -1))
+    const key = path[path.length - 1]
+
+    return parent.hasChild(key)
   }
 }
 
-/**
- * 
- * @param {*} path 模块路径（模块标识）
- * @param {*} targetModule 被更新模块
- * @param {*} newModule 新模块
- */
-function update(path, targetModule, newModule) {
-  if (process.env.NODE_ENV !== 'production') {
+function update (path, targetModule, newModule) {
+  if (__DEV__) {
     assertRawModule(path, newModule)
   }
 
@@ -118,9 +126,7 @@ function update(path, targetModule, newModule) {
     for (const key in newModule.modules) {
       // 在被替换模块中不存在新模块的子模块
       if (!targetModule.getChild(key)) {
-        // 
-        if (process.env.NODE_ENV !== 'production') {
-          // 添加一个新的模块（全新的模块，被更新的目标模块中没有这个子模块，需要手动加载
+        if (__DEV__) {
           console.warn(
             `[vuex] trying to add a new module '${key}' on hot reloading, ` +
             'manual reload is needed'

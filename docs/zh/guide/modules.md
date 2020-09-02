@@ -8,14 +8,14 @@
 
 ``` js
 const moduleA = {
-  state: { ... },
+  state: () => ({ ... }),
   mutations: { ... },
   actions: { ... },
   getters: { ... }
 }
 
 const moduleB = {
-  state: { ... },
+  state: () => ({ ... }),
   mutations: { ... },
   actions: { ... }
 }
@@ -37,7 +37,9 @@ store.state.b // -> moduleB 的状态
 
 ``` js
 const moduleA = {
-  state: { count: 0 },
+  state: () => ({
+    count: 0
+  }),
   mutations: {
     increment (state) {
       // 这里的 `state` 对象是模块的局部状态
@@ -94,7 +96,7 @@ const store = new Vuex.Store({
       namespaced: true,
 
       // 模块内容（module assets）
-      state: { ... }, // 模块内的状态已经是嵌套的了，使用 `namespaced` 属性不会对其产生影响
+      state: () => ({ ... }), // 模块内的状态已经是嵌套的了，使用 `namespaced` 属性不会对其产生影响
       getters: {
         isAdmin () { ... } // -> getters['account/isAdmin']
       },
@@ -109,7 +111,7 @@ const store = new Vuex.Store({
       modules: {
         // 继承父模块的命名空间
         myPage: {
-          state: { ... },
+          state: () => ({ ... }),
           getters: {
             profile () { ... } // -> getters['account/profile']
           }
@@ -119,7 +121,7 @@ const store = new Vuex.Store({
         posts: {
           namespaced: true,
 
-          state: { ... },
+          state: () => ({ ... }),
           getters: {
             popular () { ... } // -> getters['account/posts/popular']
           }
@@ -280,6 +282,10 @@ export function createPlugin (options = {}) {
 在 store 创建**之后**，你可以使用 `store.registerModule` 方法注册模块：
 
 ``` js
+import Vuex from 'vuex'
+
+const store = new Vuex.Store({ /* 选项 */ })
+
 // 注册模块 `myModule`
 store.registerModule('myModule', {
   // ...
@@ -295,6 +301,8 @@ store.registerModule(['nested', 'myModule'], {
 模块动态注册功能使得其他 Vue 插件可以通过在 store 中附加新模块的方式来使用 Vuex 管理状态。例如，[`vuex-router-sync`](https://github.com/vuejs/vuex-router-sync) 插件就是通过动态注册模块将 vue-router 和 vuex 结合在一起，实现应用的路由状态管理。
 
 你也可以使用 `store.unregisterModule(moduleName)` 来动态卸载模块。注意，你不能使用此方法卸载静态模块（即创建 store 时声明的模块）。
+
+注意，你可以通过 `store.hasModule(moduleName)` 方法检查该模块是否已经被注册到 store。
 
 #### 保留 state
 
@@ -315,11 +323,9 @@ store.registerModule(['nested', 'myModule'], {
 
 ``` js
 const MyReusableModule = {
-  state () {
-    return {
-      foo: 'bar'
-    }
-  },
+  state: () => ({
+    foo: 'bar'
+  }),
   // mutation, action 和 getter 等等...
 }
 ```

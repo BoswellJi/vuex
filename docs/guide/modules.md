@@ -2,20 +2,20 @@
 
 <div class="scrimba"><a href="https://scrimba.com/p/pnyzgAP/cqKK4psq" target="_blank" rel="noopener noreferrer">Try this lesson on Scrimba</a></div>
 
-Due to using a single state tree, all state of our application is contained inside one big object. However, as our application grows in scale, the store can get really bloated.
+Due to using a single state tree, all states of our application are contained inside one big object. However, as our application grows in scale, the store can get really bloated.
 
 To help with that, Vuex allows us to divide our store into **modules**. Each module can contain its own state, mutations, actions, getters, and even nested modules - it's fractal all the way down:
 
 ``` js
 const moduleA = {
-  state: { ... },
+  state: () => ({ ... }),
   mutations: { ... },
   actions: { ... },
   getters: { ... }
 }
 
 const moduleB = {
-  state: { ... },
+  state: () => ({ ... }),
   mutations: { ... },
   actions: { ... }
 }
@@ -37,7 +37,9 @@ Inside a module's mutations and getters, the first argument received will be **t
 
 ``` js
 const moduleA = {
-  state: { count: 0 },
+  state: () => ({
+    count: 0
+  }),
   mutations: {
     increment (state) {
       // `state` is the local module state
@@ -94,7 +96,7 @@ const store = new Vuex.Store({
       namespaced: true,
 
       // module assets
-      state: { ... }, // module state is already nested and not affected by namespace option
+      state: () => ({ ... }), // module state is already nested and not affected by namespace option
       getters: {
         isAdmin () { ... } // -> getters['account/isAdmin']
       },
@@ -109,7 +111,7 @@ const store = new Vuex.Store({
       modules: {
         // inherits the namespace from parent module
         myPage: {
-          state: { ... },
+          state: () => ({ ... }),
           getters: {
             profile () { ... } // -> getters['account/profile']
           }
@@ -119,7 +121,7 @@ const store = new Vuex.Store({
         posts: {
           namespaced: true,
 
-          state: { ... },
+          state: () => ({ ... }),
           getters: {
             popular () { ... } // -> getters['account/posts/popular']
           }
@@ -149,6 +151,7 @@ modules: {
       someGetter (state, getters, rootState, rootGetters) {
         getters.someOtherGetter // -> 'foo/someOtherGetter'
         rootGetters.someOtherGetter // -> 'someOtherGetter'
+        rootGetters['bar/someOtherGetter'] // -> 'bar/someOtherGetter'
       },
       someOtherGetter: state => { ... }
     },
@@ -159,6 +162,7 @@ modules: {
       someAction ({ dispatch, commit, getters, rootGetters }) {
         getters.someGetter // -> 'foo/someGetter'
         rootGetters.someGetter // -> 'someGetter'
+        rootGetters['bar/someGetter'] // -> 'bar/someGetter'
 
         dispatch('someOtherAction') // -> 'foo/someOtherAction'
         dispatch('someOtherAction', null, { root: true }) // -> 'someOtherAction'
@@ -207,7 +211,11 @@ computed: {
   ...mapState({
     a: state => state.some.nested.module.a,
     b: state => state.some.nested.module.b
-  })
+  }),
+  ...mapGetters([
+    'some/nested/module/someGetter', // -> this['some/nested/module/someGetter']
+    'some/nested/module/someOtherGetter', // -> this['some/nested/module/someOtherGetter']
+  ])
 },
 methods: {
   ...mapActions([
@@ -224,7 +232,11 @@ computed: {
   ...mapState('some/nested/module', {
     a: state => state.a,
     b: state => state.b
-  })
+  }),
+  ...mapGetters('some/nested/module', [
+    'someGetter', // -> this.someGetter
+    'someOtherGetter', // -> this.someOtherGetter
+  ])
 },
 methods: {
   ...mapActions('some/nested/module', [
@@ -280,6 +292,10 @@ export function createPlugin (options = {}) {
 You can register a module **after** the store has been created with the `store.registerModule` method:
 
 ``` js
+import Vuex from 'vuex'
+
+const store = new Vuex.Store({ /* options */ })
+
 // register a module `myModule`
 store.registerModule('myModule', {
   // ...
@@ -296,6 +312,8 @@ The module's state will be exposed as `store.state.myModule` and `store.state.ne
 Dynamic module registration makes it possible for other Vue plugins to also leverage Vuex for state management by attaching a module to the application's store. For example, the [`vuex-router-sync`](https://github.com/vuejs/vuex-router-sync) library integrates vue-router with vuex by managing the application's route state in a dynamically attached module.
 
 You can also remove a dynamically registered module with `store.unregisterModule(moduleName)`. Note you cannot remove static modules (declared at store creation) with this method.
+
+Note that you may check if the module is already registered to the store or not via `store.hasModule(moduleName)` method.
 
 #### Preserving state
 
@@ -316,11 +334,9 @@ This is actually the exact same problem with `data` inside Vue components. So th
 
 ``` js
 const MyReusableModule = {
-  state () {
-    return {
-      foo: 'bar'
-    }
-  },
+  state: () => ({
+    foo: 'bar'
+  }),
   // mutations, actions, getters...
 }
 ```

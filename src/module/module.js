@@ -56,10 +56,10 @@ export default class Module {
     return this._children[key]
   }
 
-  /**
-   * 更新模块（使用新的模块更新旧的模块
-   * @param {*} rawModule 
-   */
+  hasChild (key) {
+    return key in this._children
+  }
+
   update (rawModule) {
     // 原始模块中的名称空间使用新的模块来更新
     this._rawModule.namespaced = rawModule.namespaced

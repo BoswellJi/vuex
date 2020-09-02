@@ -90,12 +90,16 @@ const store = new Vuex.Store({
 В комплекте с Vuex идёт плагин логирования, который можно использовать при отладке:
 
 ```js
-import createLogger from 'vuex/dist/logger';
+import { createLogger } from 'vuex'
 
 const store = new Vuex.Store({
   plugins: [createLogger()]
 });
 ```
+
+:::warning ВНИМАНИЕ
+До версии 3.5.0 функция `createLogger` экспортировалась по пути `vuex/dist/logger`. Ознакомьтесь с разделом "Vuex до версии 3.5.0" на этой странице.
+:::
 
 Функция `createLogger` принимает следующие опции:
 
@@ -105,7 +109,12 @@ const logger = createLogger({
   filter(mutation, stateBefore, stateAfter) {
     // возвращает `true`, если мутация должна быть залогирована
     // `mutation` — это объект `{ type, payload }`
-    return mutation.type !== 'aBlacklistedMutation';
+    return mutation.type !== 'aBlocklistedMutation';
+  },
+  actionFilter (action, state) {
+    // аналогично `filter`, но для действий
+    // `action` будет объектом `{ type, payload }`
+    return action.type !== 'aBlocklistedAction'
   },
   transformer(state) {
     // обработать состояние перед логированием
@@ -117,6 +126,12 @@ const logger = createLogger({
     // но это можно изменить
     return mutation.type;
   },
+  actionTransformer (action) {
+    // аналогично `mutationTransformer`, но для действий
+    return action.type
+  },
+  logActions: true, // логирование действий
+  logMutations: true, // логирование мутаций
   logger: console // реализация API `console`, по умолчанию `console`
 });
 ```
@@ -124,3 +139,14 @@ const logger = createLogger({
 Логирующий плагин также можно включить напрямую используя отдельный тег `<script>`, помещающий функцию `createVuexLogger` в глобальное пространство имён.
 
 Обратите внимание, что этот плагин делает слепки состояний, поэтому использовать его стоит только на этапе разработки.
+
+#### Vuex до версии 3.5.0
+
+До версии 3.5.0 функция `createLogger` экспортировалась по следующему пути `vuex/dist/logger`.
+
+``` js
+import createLogger from 'vuex/dist/logger'
+const store = new Vuex.Store({
+  plugins: [createLogger()]
+})
+```

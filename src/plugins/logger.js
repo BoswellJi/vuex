@@ -7,63 +7,82 @@ export default function createLogger ({
   filter = (mutation, stateBefore, stateAfter) => true,
   transformer = state => state,
   mutationTransformer = mut => mut,
+  actionFilter = (action, state) => true,
+  actionTransformer = act => act,
+  logMutations = true,
+  logActions = true,
   logger = console
 } = {}) {
   return store => {
     // 拷贝当前的状态对象
     let prevState = deepCopy(store.state)
 
-    // 订阅store对象
-    store.subscribe((mutation, state) => {
-      // logger 日志打印器 不存在，直接返回
-      if (typeof logger === 'undefined') {
-        return
-      }
-      // 变化后的状态
-      const nextState = deepCopy(state)
-      // 默认过滤方法返回true
-      if (filter(mutation, prevState, nextState)) {
-        // 当前日期
-        const time = new Date()
-        // 格式化日期
-        const formattedTime = ` @ ${pad(time.getHours(), 2)}:${pad(time.getMinutes(), 2)}:${pad(time.getSeconds(), 2)}.${pad(time.getMilliseconds(), 3)}`
-        // mutation转换器
-        const formattedMutation = mutationTransformer(mutation)
-        // 日志信息 改变的类型
-        const message = `mutation ${mutation.type}${formattedTime}`
-        const startMessage = collapsed
-          ? logger.groupCollapsed
-          : logger.group
+    if (typeof logger === 'undefined') {
+      return
+    }
 
-        // render
-        try {
-          startMessage.call(logger, message)
-        } catch (e) {
-          console.log(message)
+    if (logMutations) {
+      store.subscribe((mutation, state) => {
+        const nextState = deepCopy(state)
+
+        if (filter(mutation, prevState, nextState)) {
+          const formattedTime = getFormattedTime()
+          const formattedMutation = mutationTransformer(mutation)
+          const message = `mutation ${mutation.type}${formattedTime}`
+
+          startMessage(logger, message, collapsed)
+          logger.log('%c prev state', 'color: #9E9E9E; font-weight: bold', transformer(prevState))
+          logger.log('%c mutation', 'color: #03A9F4; font-weight: bold', formattedMutation)
+          logger.log('%c next state', 'color: #4CAF50; font-weight: bold', transformer(nextState))
+          endMessage(logger)
         }
 
-        logger.log('%c prev state', 'color: #9E9E9E; font-weight: bold', transformer(prevState))
-        logger.log('%c mutation', 'color: #03A9F4; font-weight: bold', formattedMutation)
-        logger.log('%c next state', 'color: #4CAF50; font-weight: bold', transformer(nextState))
+        prevState = nextState
+      })
+    }
 
-        try {
-          logger.groupEnd()
-        } catch (e) {
-          logger.log('—— log end ——')
+    if (logActions) {
+      store.subscribeAction((action, state) => {
+        if (actionFilter(action, state)) {
+          const formattedTime = getFormattedTime()
+          const formattedAction = actionTransformer(action)
+          const message = `action ${action.type}${formattedTime}`
+
+          startMessage(logger, message, collapsed)
+          logger.log('%c action', 'color: #03A9F4; font-weight: bold', formattedAction)
+          endMessage(logger)
         }
-      }
-
-      // 处理之后，将变更后的状态，赋值给前一个状态
-      prevState = nextState
-    })
+      })
+    }
   }
 }
 
-/**
- * 重复字符串
- * @param {*} str 
- * @param {*} times 
- */
+function startMessage (logger, message, collapsed) {
+  const startMessage = collapsed
+    ? logger.groupCollapsed
+    : logger.group
+
+  // render
+  try {
+    startMessage.call(logger, message)
+  } catch (e) {
+    logger.log(message)
+  }
+}
+
+function endMessage (logger) {
+  try {
+    logger.groupEnd()
+  } catch (e) {
+    logger.log('—— log end ——')
+  }
+}
+
+function getFormattedTime () {
+  const time = new Date()
+  return ` @ ${pad(time.getHours(), 2)}:${pad(time.getMinutes(), 2)}:${pad(time.getSeconds(), 2)}.${pad(time.getMilliseconds(), 3)}`
+}
+
 function repeat (str, times) {
   // 将指定数量的数组的空元素进行连接
   return (new Array(times + 1)).join(str)

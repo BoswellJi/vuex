@@ -26,9 +26,7 @@ export class Store {
       install(window.Vue)
     }
 
-    // 不是生产环境下
-    if (process.env.NODE_ENV !== 'production') {
-
+    if (__DEV__) {
       assert(Vue, `must call Vue.use(Vuex) before creating a store instance.`)
       assert(typeof Promise !== 'undefined', `vuex requires a Promise polyfill in this browser.`)
       assert(this instanceof Store, `store must be called with the new operator.`)
@@ -112,7 +110,7 @@ export class Store {
   }
 
   set state (v) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (__DEV__) {
       assert(false, `use store.replaceState() to explicit replace store state.`)
     }
   }
@@ -134,7 +132,7 @@ export class Store {
     const mutation = { type, payload }
     const entry = this._mutations[type]
     if (!entry) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (__DEV__) {
         console.error(`[vuex] unknown mutation type: ${type}`)
       }
       return
@@ -144,10 +142,13 @@ export class Store {
         handler(payload)
       })
     })
-    this._subscribers.forEach(sub => sub(mutation, this.state))
+
+    this._subscribers
+      .slice() // shallow copy to prevent iterator invalidation if subscriber synchronously calls unsubscribe
+      .forEach(sub => sub(mutation, this.state))
 
     if (
-      process.env.NODE_ENV !== 'production' &&
+      __DEV__ &&
       options && options.silent
     ) {
       console.warn(
@@ -173,8 +174,7 @@ export class Store {
     const entry = this._actions[type]
     // 不存在的action 类型
     if (!entry) {
-      if (process.env.NODE_ENV !== 'production') {
-        // 未知的action type
+      if (__DEV__) {
         console.error(`[vuex] unknown action type: ${type}`)
       }
       return
@@ -182,10 +182,11 @@ export class Store {
 
     try {
       this._actionSubscribers
+        .slice() // shallow copy to prevent iterator invalidation if subscriber synchronously calls unsubscribe
         .filter(sub => sub.before)
         .forEach(sub => sub.before(action, this.state))
     } catch (e) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (__DEV__) {
         console.warn(`[vuex] error in before action subscribers: `)
         console.error(e)
       }
@@ -195,36 +196,46 @@ export class Store {
       ? Promise.all(entry.map(handler => handler(payload)))
       : entry[0](payload)
 
-    return result.then(res => {
-      try {
-        this._actionSubscribers
-          .filter(sub => sub.after)
-          .forEach(sub => sub.after(action, this.state))
-      } catch (e) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`[vuex] error in after action subscribers: `)
-          console.error(e)
+    return new Promise((resolve, reject) => {
+      result.then(res => {
+        try {
+          this._actionSubscribers
+            .filter(sub => sub.after)
+            .forEach(sub => sub.after(action, this.state))
+        } catch (e) {
+          if (__DEV__) {
+            console.warn(`[vuex] error in after action subscribers: `)
+            console.error(e)
+          }
         }
-      }
-      return res
+        resolve(res)
+      }, error => {
+        try {
+          this._actionSubscribers
+            .filter(sub => sub.error)
+            .forEach(sub => sub.error(action, this.state, error))
+        } catch (e) {
+          if (__DEV__) {
+            console.warn(`[vuex] error in error action subscribers: `)
+            console.error(e)
+          }
+        }
+        reject(error)
+      })
     })
   }
 
-  // 进行订阅（对store进行订阅
-  subscribe (fn) {
-    return genericSubscribe(fn, this._subscribers)
+  subscribe (fn, options) {
+    return genericSubscribe(fn, this._subscribers, options)
   }
 
-  // 订阅Action 
-  subscribeAction (fn) {
-    // 是函数 ？ 返回处理之后的对象 ： 不是函数直接返回
+  subscribeAction (fn, options) {
     const subs = typeof fn === 'function' ? { before: fn } : fn
-    // 生成订阅
-    return genericSubscribe(subs, this._actionSubscribers)
+    return genericSubscribe(subs, this._actionSubscribers, options)
   }
 
   watch (getter, cb, options) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (__DEV__) {
       assert(typeof getter === 'function', `store.watch only accepts a function.`)
     }
     return this._watcherVM.$watch(() => getter(this.state, this.getters), cb, options)
@@ -251,8 +262,7 @@ export class Store {
     // 路径为字符串，处理为数组
     if (typeof path === 'string') path = [path]
 
-    if (process.env.NODE_ENV !== 'production') {
-      // 模块字符串必须为数组或者字符串
+    if (__DEV__) {
       assert(Array.isArray(path), `module path must be a string or an Array.`)
       // 不能使用registerModule来注册根模块
       assert(path.length > 0, 'cannot register the root module by using registerModule.')
@@ -270,7 +280,7 @@ export class Store {
   unregisterModule (path) {
     if (typeof path === 'string') path = [path]
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (__DEV__) {
       assert(Array.isArray(path), `module path must be a string or an Array.`)
     }
 
@@ -280,6 +290,16 @@ export class Store {
       Vue.delete(parentState, path[path.length - 1])
     })
     resetStore(this)
+  }
+
+  hasModule (path) {
+    if (typeof path === 'string') path = [path]
+
+    if (__DEV__) {
+      assert(Array.isArray(path), `module path must be a string or an Array.`)
+    }
+
+    return this._modules.isRegistered(path)
   }
 
   hotUpdate (newOptions) {
@@ -298,15 +318,11 @@ export class Store {
   }
 }
 
-/**
- * 生成 订阅
- * @param {*} fn 
- * @param {*} subs 订阅集合
- */
-function genericSubscribe (fn, subs) {
-  // 没有就添加
+function genericSubscribe (fn, subs, options) {
   if (subs.indexOf(fn) < 0) {
-    subs.push(fn)
+    options && options.prepend
+      ? subs.unshift(fn)
+      : subs.push(fn)
   }
   // 返回订阅信息，进行删除使用
   return () => {
@@ -426,7 +442,7 @@ function installModule (store, rootState, path, module, hot) {
   // register in namespace map
   // 模块有命名空间
   if (module.namespaced) {
-    if (store._modulesNamespaceMap[namespace] && process.env.NODE_ENV !== 'production') {
+    if (store._modulesNamespaceMap[namespace] && __DEV__) {
       console.error(`[vuex] duplicate namespace ${namespace} for the namespaced module ${path.join('/')}`)
     }
     // 模块名称空间映射关系
@@ -440,8 +456,7 @@ function installModule (store, rootState, path, module, hot) {
     // 获取最后一个模块名(即为指定的模块名称)
     const moduleName = path[path.length - 1]
     store._withCommit(() => {
-      if (process.env.NODE_ENV !== 'production') {
-        // 模块名称在父state中（判断模块的名称是否存在父模块的state对象中，因为需要根据state.moduleName来找到这个模块的state）
+      if (__DEV__) {
         if (moduleName in parentState) {
           // 某模块的state 字段，被一个模块使用相同的名称重写了
           console.warn(
@@ -517,7 +532,7 @@ function makeLocalContext (store, namespace, path) {
       if (!options || !options.root) {
         // 
         type = namespace + type
-        if (process.env.NODE_ENV !== 'production' && !store._actions[type]) {
+        if (__DEV__ && !store._actions[type]) {
           console.error(`[vuex] unknown local action type: ${args.type}, global type: ${type}`)
           return
         }
@@ -533,7 +548,7 @@ function makeLocalContext (store, namespace, path) {
 
       if (!options || !options.root) {
         type = namespace + type
-        if (process.env.NODE_ENV !== 'production' && !store._mutations[type]) {
+        if (__DEV__ && !store._mutations[type]) {
           console.error(`[vuex] unknown local mutation type: ${args.type}, global type: ${type}`)
           return
         }
@@ -670,8 +685,7 @@ function registerAction (store, type, handler, local) {
 function registerGetter (store, type, rawGetter, local) {
   // 获取store的包裹的Getter对象中的某个（名称空间+键）存在
   if (store._wrappedGetters[type]) {
-    if (process.env.NODE_ENV !== 'production') {
-      // 重复的key
+    if (__DEV__) {
       console.error(`[vuex] duplicate getter key: ${type}`)
     }
     return
@@ -695,8 +709,7 @@ function registerGetter (store, type, rawGetter, local) {
 function enableStrictMode (store) {
   // Vue 监听 store 的state 变化，对返回值进行依赖收集
   store._vm.$watch(function () { return this._data.$$state }, () => {
-    if (process.env.NODE_ENV !== 'production') {
-      // 不能改变vuex store state 在mutation之外处理
+    if (__DEV__) {
       assert(store._committing, `do not mutate vuex store state outside mutation handlers.`)
     }
   }, { deep: true, sync: true })
@@ -708,12 +721,7 @@ function enableStrictMode (store) {
  * @param {*} path 
  */
 function getNestedState (state, path) {
-  // 是否存在路径（根模块 0，子模块 >=1）
-  return path.length
-  // 非根模块 根据模块名来获取对应模块的state
-    ? path.reduce((state, key) => state[key], state)
-    // 根模块
-    : state
+  return path.reduce((state, key) => state[key], state)
 }
 
 /**
@@ -730,7 +738,7 @@ function unifyObjectStyle (type, payload, options) {
     type = type.type
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (__DEV__) {
     assert(typeof type === 'string', `expects string as the type, but found ${typeof type}.`)
   }
   // 返回统一的dispatch数据
@@ -744,7 +752,7 @@ function unifyObjectStyle (type, payload, options) {
 export function install (_Vue) {
   // 不得重复添加
   if (Vue && _Vue === Vue) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (__DEV__) {
       console.error(
         '[vuex] already installed. Vue.use(Vuex) should be called only once.'
       )

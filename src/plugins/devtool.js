@@ -30,5 +30,9 @@ export default function devtoolPlugin (store) {
   store.subscribe((mutation, state) => {
     // 状态变更
     devtoolHook.emit('vuex:mutation', mutation, state)
-  })
+  }, { prepend: true })
+
+  store.subscribeAction((action, state) => {
+    devtoolHook.emit('vuex:action', action, state)
+  }, { prepend: true })
 }

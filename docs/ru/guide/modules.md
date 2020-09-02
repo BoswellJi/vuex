@@ -8,14 +8,14 @@
 
 ```js
 const moduleA = {
-  state: { ... },
+  state: () => ({ ... }),
   mutations: { ... },
   actions: { ... },
   getters: { ... }
 }
 
 const moduleB = {
-  state: { ... },
+  state: () => ({ ... }),
   mutations: { ... },
   actions: { ... }
 }
@@ -33,11 +33,13 @@ store.state.b // -> состояние модуля `moduleB`
 
 ### Локальное состояние модулей
 
-Первым аргументом, который получают мутации и геттеры, будет **локальное состояние модуля**.
+Первым аргументом, который получает мутации и геттеры, будет **локальное состояние модуля**.
 
 ```js
 const moduleA = {
-  state: { count: 0 },
+  state: () => ({
+    count: 0
+  }),
   mutations: {
     increment(state) {
       // `state` указывает на локальное состояние модуля
@@ -85,7 +87,7 @@ const moduleA = {
 
 По умолчанию действия, мутации и геттеры внутри модулей регистрируются в **глобальном пространстве имён** — это позволяет нескольким модулям реагировать на тот же тип мутаций/действий.
 
-Если вы хотите сделать модули более самодостаточными и готовыми для переиспользования, вы можете создать его с собственным пространством имён, указав опцию `namespaced: true`. Когда модуль будет зарегистрирован, все его геттеры, действия и мутации будут автоматически связаны с этим пространством имён, основываясь на пути по которому зарегистрирован модуль. Например:
+Если вы хотите сделать модули более самодостаточными и готовыми для переиспользования, вы можете создать его с собственным пространством имён, указав опцию `namespaced: true`. Когда модуль будет зарегистрирован, все его геттеры, действия и мутации будут автоматически связаны с этим пространством имён, основываясь на пути, по которому зарегистрирован модуль. Например:
 
 ```js
 const store = new Vuex.Store({
@@ -94,7 +96,7 @@ const store = new Vuex.Store({
       namespaced: true,
 
       // содержимое модуля
-      state: { ... }, // состояние модуля автоматически вложено и не зависит от опции пространства имён
+      state: () => ({ ... }), // состояние модуля автоматически вложено и не зависит от опции пространства имён
       getters: {
         isAdmin () { ... } // -> getters['account/isAdmin']
       },
@@ -109,7 +111,7 @@ const store = new Vuex.Store({
       modules: {
         // наследует пространство имён из родительского модуля
         myPage: {
-          state: { ... },
+          state: () => ({ ... }),
           getters: {
             profile () { ... } // -> getters['account/profile']
           }
@@ -119,7 +121,7 @@ const store = new Vuex.Store({
         posts: {
           namespaced: true,
 
-          state: { ... },
+          state: () => ({ ... }),
           getters: {
             popular () { ... } // -> getters['account/posts/popular']
           }
@@ -149,6 +151,7 @@ modules: {
       someGetter (state, getters, rootState, rootGetters) {
         getters.someOtherGetter // -> 'foo/someOtherGetter'
         rootGetters.someOtherGetter // -> 'someOtherGetter'
+        rootGetters['bar/someOtherGetter'] // -> 'bar/someOtherGetter'
       },
       someOtherGetter: state => { ... }
     },
@@ -159,6 +162,7 @@ modules: {
       someAction ({ dispatch, commit, getters, rootGetters }) {
         getters.someGetter // -> 'foo/someGetter'
         rootGetters.someGetter // -> 'someGetter'
+        rootGetters['bar/someGetter'] // -> 'bar/someGetter'
 
         dispatch('someOtherAction') // -> 'foo/someOtherAction'
         dispatch('someOtherAction', null, { root: true }) // -> 'someOtherAction'
@@ -207,7 +211,11 @@ computed: {
   ...mapState({
     a: state => state.some.nested.module.a,
     b: state => state.some.nested.module.b
-  })
+  }),
+  ...mapGetters([
+    'some/nested/module/someGetter', // -> this['some/nested/module/someGetter']
+    'some/nested/module/someOtherGetter', // -> this['some/nested/module/someOtherGetter']
+  ])
 },
 methods: {
   ...mapActions([
@@ -224,7 +232,11 @@ computed: {
   ...mapState('some/nested/module', {
     a: state => state.a,
     b: state => state.b
-  })
+  }),
+  ...mapGetters('some/nested/module', [
+    'someGetter', // -> this.someGetter
+    'someOtherGetter', // -> this.someOtherGetter
+  ])
 },
 methods: {
   ...mapActions('some/nested/module', [
@@ -277,6 +289,10 @@ export function createPlugin(options = {}) {
 Вы можете зарегистрировать модуль уже и **после** того, как хранилище было создано, используя метод `store.registerModule`:
 
 ```js
+import Vuex from 'vuex'
+
+const store = new Vuex.Store({ /* опции */ })
+
 // регистрация модуля `myModule`
 store.registerModule('myModule', {
   // ...
@@ -293,6 +309,8 @@ store.registerModule(['nested', 'myModule'], {
 Динамическая регистрация модулей позволяет другим плагинам Vue также использовать Vuex для управления своим состоянием, добавляя модуль к хранилищу данных приложения. Например, библиотека [`vuex-router-sync`](https://github.com/vuejs/vuex-router-sync) интегрирует vue-router во vuex, отражая изменение текущего пути приложения в динамически присоединённом модуле.
 
 Удалить динамически зарегистрированный модуль можно с помощью `store.unregisterModule(moduleName)`. Обратите внимание, что статические (определённые на момент создания хранилища) модули при помощи этого метода удалить не получится.
+
+Обратите внимание, что можно проверить, зарегистрирован ли уже модуль с заданным именем с помощью метода `store.hasModule(moduleName)`.
 
 #### Сохранение состояния
 
@@ -313,11 +331,9 @@ store.registerModule(['nested', 'myModule'], {
 
 ```js
 const MyReusableModule = {
-  state() {
-    return {
-      foo: 'bar'
-    };
-  }
+  state: () => ({
+    foo: 'bar'
+  })
   // мутации, действия, геттеры...
 };
 ```

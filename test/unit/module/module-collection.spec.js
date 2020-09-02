@@ -1,4 +1,4 @@
-import ModuleCollection from '../../../src/module/module-collection'
+import ModuleCollection from '@/module/module-collection'
 
 describe('ModuleCollection', () => {
   it('get', () => {
@@ -91,5 +91,13 @@ describe('ModuleCollection', () => {
     })
     collection.unregister(['a'])
     expect(collection.get(['a']).state.value).toBe(true)
+  })
+
+  it('warns when unregistering non existing module', () => {
+    const spy = jest.spyOn(console, 'warn').mockImplementation()
+
+    const collection = new ModuleCollection({})
+    collection.unregister(['a'])
+    expect(spy).toHaveBeenCalled()
   })
 })
