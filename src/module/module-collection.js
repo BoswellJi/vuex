@@ -62,7 +62,6 @@ export default class ModuleCollection {
     const newModule = new Module(rawModule, runtime)
     // 当前没有模块的路径信息，意味着在注册根模块
     if (path.length === 0) {
-      // 根模块
       this.root = newModule
     } else {
       // 返回子模块的父模块（这里的目的：就是为了找到当前这个模块的父模块）   参数：出去最后一个元素的数组
@@ -71,7 +70,8 @@ export default class ModuleCollection {
       parent.addChild(path[path.length - 1], newModule)
     }
 
-    // register nested modules 注册嵌套模块 获取配置选项中额modules参数，如果有其他模块，进行迭代注册
+    // register nested modules 
+    // 注册嵌套模块 获取配置选项中额modules参数，如果有其他模块，进行迭代注册
     if (rawModule.modules) {
       // 遍历每个store 模块，给每个进行注册 [] 参数，每个子store module
       forEachValue(rawModule.modules, (rawChildModule, key) => {

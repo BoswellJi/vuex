@@ -34,6 +34,7 @@ export class Store {
       assert(this instanceof Store, `store must be called with the new operator.`)
     }
 
+    // vuex插件
     const {
       plugins = [],
       strict = false
