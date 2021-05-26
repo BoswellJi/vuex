@@ -1,25 +1,16 @@
 import { forEachValue } from '../util'
 
-// store的模块的基础数据结构，使用一些属性和方法的包
 // Base data struct for store's module, package with some attribute and method
 export default class Module {
   /**
-   * 
-   * @param {*} rawModule options 因为每个模块下的配置选项都是相同的
-   * @param {*} runtime false
    */
   constructor (rawModule, runtime) {
     this.runtime = runtime
-    // 模块下的所有子模块
     // Store some children item
     this._children = Object.create(null)
-    // 保存原始的模块配置选项
     // Store the origin module object which passed by programmer
     this._rawModule = rawModule
-    // 获取模块配置选项中的state
     const rawState = rawModule.state
-
-    // Store 原始模块的 state 是函数，返回 函数返回值，否者直接使用（object）
     // Store the origin module's state
     this.state = (typeof rawState === 'function' ? rawState() : rawState) || {}
   }
@@ -33,8 +24,7 @@ export default class Module {
 
   /**
    * 给store模块添加子模块，因为每个模块配置选项中都是可以有自己的子模块的
-   * @param {*} key 
-   * @param {*} module 
+   * 建立父子模块关系
    */
   addChild (key, module) {
     this._children[key] = module

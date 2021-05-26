@@ -13,6 +13,11 @@ export default new Vuex.Store({
     cart,
     products
   },
+  getters:{
+    cart1Fn1: (state, getters, rootState) => {
+          
+    },
+  },
   strict: debug,
   plugins: debug ? [createLogger()] : []
 })

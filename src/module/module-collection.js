@@ -2,26 +2,13 @@ import Module from './module'
 import { assert, forEachValue } from '../util'
 
 export default class ModuleCollection {
-  /**
-   * 构造函数
-   * @param {*} rawRootModule store的配置选项options
-   */
   constructor(rawRootModule) {
-    // 注册根模块
     // register root module (Vuex.Store options)
-    // 初始化path为 空数组，当前没有模块，当前相当于在注册根模块
     this.register([], rawRootModule, false)
   }
 
-  /**
-   * 获取模块
-   * @param {*} path 当为空数组时，返回根模块下指定key的子模块
-   */
   get(path) {
-    // 参数: key 为 path
-    // 从根模块开始找到子模块
-    // 当数组为空时，返回值为第二个参数的值
-    // reduce方法的返回值为第一个参数的，最后值
+    // 向下找子模块
     return path.reduce((module, key) => {
       return module.getChild(key)
     }, this.root)
@@ -43,34 +30,31 @@ export default class ModuleCollection {
     }, '')
   }
 
-  // 跟新模块
   update(rawRootModule) {
     update([], this.root, rawRootModule)
   }
 
+  /***
+   * path的意义：root/mod1name/mod2name,模块树的路径
+   */
   register (path, rawModule, runtime = true) {
     if (__DEV__) {
       assertRawModule(path, rawModule)
     }
-    // 创建新模块 参数：options 
+    // 根模块
     const newModule = new Module(rawModule, runtime)
-    // 当前没有模块的路径信息，意味着在注册根模块
     if (path.length === 0) {
       this.root = newModule
     } else {
       // 返回子模块的父模块（这里的目的：就是为了找到当前这个模块的父模块）   参数：出去最后一个元素的数组
       const parent = this.get(path.slice(0, -1))
-      // 将子模块添加到父模块中去 参数：最后一个模块名称，
       parent.addChild(path[path.length - 1], newModule)
     }
 
     // register nested modules 
-    // 注册嵌套模块 获取配置选项中额modules参数，如果有其他模块，进行迭代注册
     if (rawModule.modules) {
-      // 遍历每个store 模块，给每个进行注册 [] 参数，每个子store module
-      forEachValue(rawModule.modules, (rawChildModule, key) => {
-        // 对每个子模块进行注册： 参数： 给根模块注册子模块 [a,b]: 第一个元素是 根模块的子模块，第二个元素是，子模块的子模块，会在当前的模块中递归下去，直到结束；
-        // concat方法不会对原始数组进行改变
+      forEachValue(rawModule.modules, (rawChildModule, key /* 模块名 modules:{m1:xxx} =>m1 */) => {
+        // [cart,cart1]
         this.register(path.concat(key), rawChildModule, runtime)
       })
     }
