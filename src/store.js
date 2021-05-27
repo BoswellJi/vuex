@@ -37,7 +37,7 @@ export class Store {
     this._mutations = Object.create(null)
     
     this._wrappedGetters = Object.create(null)
-    // 
+    // store module tree
     this._modules = new ModuleCollection(options)
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
@@ -62,11 +62,15 @@ export class Store {
 
     // init root module. 
     // this also recursively registers all sub-modules 
-    // and collects all module getters inside this._wrappedGetters
+    // and collects all module getters inside this._wrappedGetters, 
+    
+    // getters,actions,mutations的整理
     installModule(this, state, [], this._modules.root)
 
     // initialize the store vm, which is responsible for the reactivity
     // (also registers _wrappedGetters as computed properties)
+
+    // 将vuex 中的state处理为响应式对象
     resetStoreVM(this, state)
 
     // apply plugins
@@ -272,12 +276,9 @@ export class Store {
   }
 
   _withCommit (fn) {
-    // 提交状态
     const committing = this._committing
-    // 正在提交
     this._committing = true
     fn()
-    // 提交成功
     this._committing = committing
   }
 }
@@ -315,7 +316,7 @@ function resetStore (store, hot) {
 }
 
 /**
- * 重置仓库的Vue实例
+ * 重置仓库的Vue实例 store实例，根state
  */
 function resetStoreVM (store, state, hot) {
   const oldVm = store._vm
@@ -327,7 +328,6 @@ function resetStoreVM (store, state, hot) {
   const wrappedGetters = store._wrappedGetters
   const computed = {}
   forEachValue(wrappedGetters, (fn, key) => {
-    // 
     // use computed to leverage its lazy-caching mechanism
     // direct inline function use will lead to closure preserving oldVm.
     // using partial to return function with only arguments preserved in closure environment.
@@ -344,11 +344,12 @@ function resetStoreVM (store, state, hot) {
   // some funky global mixins
   const silent = Vue.config.silent
   Vue.config.silent = true
-  // new Vue()
+  // new Vue(): 将根state处理为响应式属性，所以变化时，$store.state.attr可以引起视图变更
   store._vm = new Vue({
     data: {
       $$state: state
     },
+    // getter被直接当作计算属性
     computed
   })
   Vue.config.silent = silent
@@ -371,9 +372,12 @@ function resetStoreVM (store, state, hot) {
 }
 
 /**
- * 安装模块
+ * 安装模块 store实例，根state,当前模块path,根模块（包含_children模块
+ * 
+ * path:就是模块名,根级为[],二级为['','two level','three level']等等
  */
 function installModule (store, rootState, path, module, hot) {
+  // 没有路径
   const isRoot = !path.length
   const namespace = store._modules.getNamespace(path)
 
@@ -429,6 +433,7 @@ function installModule (store, rootState, path, module, hot) {
     registerGetter(store, namespacedType, getter, local)
   })
 
+  // 递归安装模块，root -> _children
   module.forEachChild((child, key) => {
     installModule(store, rootState, path.concat(key), child, hot)
   })

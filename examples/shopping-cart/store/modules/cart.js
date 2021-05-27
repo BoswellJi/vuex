@@ -94,9 +94,9 @@ export default {
       // namespaced: true,
       state:{cart1Name:true},
       getters:{
-        cart1Fn1: (state, getters, rootState) => {
+        // cart1Fn1: (state, getters, rootState) => {
           
-        },
+        // },
       },
       mutations:{
         cart1MutationFn1(state){

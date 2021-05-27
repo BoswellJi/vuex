@@ -41,12 +41,12 @@ export default class ModuleCollection {
     if (__DEV__) {
       assertRawModule(path, rawModule)
     }
-    // 根模块
+    // 实例化模块
     const newModule = new Module(rawModule, runtime)
     if (path.length === 0) {
       this.root = newModule
     } else {
-      // 返回子模块的父模块（这里的目的：就是为了找到当前这个模块的父模块）   参数：出去最后一个元素的数组
+      // 找到当前模块的父模块（这里的目的：就是为了找到当前这个模块的父模块） 参数：出去最后一个元素的数组
       const parent = this.get(path.slice(0, -1))
       parent.addChild(path[path.length - 1], newModule)
     }

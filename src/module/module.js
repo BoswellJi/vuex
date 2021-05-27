@@ -2,7 +2,11 @@ import { forEachValue } from '../util'
 
 // Base data struct for store's module, package with some attribute and method
 export default class Module {
-  /**
+  /***
+   * 一个模块的数据结构
+   * _children:,
+   * _rawModule:
+   * state 
    */
   constructor (rawModule, runtime) {
     this.runtime = runtime
