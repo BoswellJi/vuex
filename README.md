@@ -1,29 +1,25 @@
 # Vuex
 
-[![npm](https://img.shields.io/npm/v/vuex.svg)](https://npmjs.com/package/vuex)
+[![npm](https://img.shields.io/npm/v/vuex/next.svg)](https://npmjs.com/package/vuex)
 [![ci status](https://circleci.com/gh/vuejs/vuex/tree/dev.png?style=shield)](https://circleci.com/gh/vuejs/vuex)
 
 ---
 
-:fire: **HEADS UP!** You're currently looking at Vuex 3 branch. If you're looking for Vuex 4, [please check out `4.0` branch](https://github.com/vuejs/vuex/tree/4.0).
+:fire: **HEADS UP!** You're currently looking at Vuex 4 branch. If you're looking for Vuex 3, [please check out `dev` branch](https://github.com/vuejs/vuex).
 
 ---
 
 Vuex is a state management pattern + library for Vue.js applications. It serves as a centralized store for all the components in an application, with rules ensuring that the state can only be mutated in a predictable fashion. It also integrates with Vue's official [devtools extension](https://github.com/vuejs/vue-devtools) to provide advanced features such as zero-config time-travel debugging and state snapshot export / import.
 
-Learn more about Vuex at "[What is Vuex?](https://vuex.vuejs.org/)", or get started by looking into [full documentation](http://vuex.vuejs.org/).
+Learn more about Vuex at "[What is Vuex?](https://next.vuex.vuejs.org/)", or get started by looking into [full documentation](http://next.vuex.vuejs.org/).
 
 ## Documentation
 
-To check out docs, visit [vuex.vuejs.org](https://vuex.vuejs.org/).
+To check out docs, visit [vuex.vuejs.org](https://next.vuex.vuejs.org/).
 
 ## Examples
 
-- [Counter](https://github.com/vuejs/vuex/tree/dev/examples/counter)
-- [Counter with Hot Reload](https://github.com/vuejs/vuex/tree/dev/examples/counter-hot)
-- [TodoMVC](https://github.com/vuejs/vuex/tree/dev/examples/todomvc)
-- [Flux Chat](https://github.com/vuejs/vuex/tree/dev/examples/chat)
-- [Shopping Cart](https://github.com/vuejs/vuex/tree/dev/examples/shopping-cart)
+You may find example applications built with Vuex under the `examples` directory.
 
 Running the examples:
 
@@ -57,9 +53,3 @@ Please make sure to read the [Contributing Guide](https://github.com/vuejs/vuex/
 [MIT](http://opensource.org/licenses/MIT)
 
 Copyright (c) 2015-present Evan You
-
-
-## vuex核心
-
-* store/仓库：集中式存储管理，相应规则`mutation/可变的`保证状态以一种可预测的方式发生变化；
-* module/模块：当store对象变得相当臃肿时，为了解决这个问题，vuex允许将store分割成模块，每个模块都有state,mutation,action,getter,module;

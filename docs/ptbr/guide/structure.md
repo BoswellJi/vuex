@@ -4,7 +4,7 @@ O Vuex não restringe realmente como você estrutura seu código. Em vez disso, 
 
 1. O estado do nível da aplicação é centralizado no _store_.
 
-2. A única maneira de mudar o estado é confirmando (ou fazendo _commit_ das) **mutações**, que são transações síncronas
+2. A única maneira de mudar o estado é confirmando (ou fazendo _commit_ das) **mutações**, que são transações síncronas.
 
 3. A lógica assíncrona deve ser encapsulada e pode ser composta com **ações**.
 
@@ -12,7 +12,7 @@ Enquanto você seguir estas regras, depende de você como estruturar seu projeto
 
 Para qualquer aplicação mais complexa, provavelmente precisaremos aproveitar os módulos. Aqui está um exemplo de estrutura de projeto:
 
-``` bash
+```bash
 ├── index.html
 ├── main.js
 ├── api
@@ -21,7 +21,7 @@ Para qualquer aplicação mais complexa, provavelmente precisaremos aproveitar o
 │   ├── App.vue
 │   └── ...
 └── store
-    ├── index.js          # onde montamos módulos e exportamos a store
+    ├── index.js          # onde montamos os módulos e exportamos o store
     ├── actions.js        # ações raiz
     ├── mutations.js      # mutações raiz
     └── modules
@@ -29,4 +29,4 @@ Para qualquer aplicação mais complexa, provavelmente precisaremos aproveitar o
         └── products.js   # módulo products
 ```
 
-Como referência, confira o [Exemplo do Carrinho de Compras](https://github.com/vuejs/vuex/tree/dev/examples/shopping-cart).
+Como referência, confira o [Exemplo do Carrinho de Compras](https://github.com/vuejs/vuex/tree/4.0/examples/classic/shopping-cart).

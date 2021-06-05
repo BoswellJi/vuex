@@ -1,6 +1,6 @@
 # Getter
 
-<div class="scrimba"><a href="https://scrimba.com/p/pnyzgAP/c2Be7TB" target="_blank" rel="noopener noreferrer">在 scrimba 上尝试这节课</a></div>
+<div class="scrimba"><a href="https://scrimba.com/p/pnyzgAP/c2Be7TB" target="_blank" rel="noopener noreferrer">在 Scrimba 上尝试这节课</a></div>
 
 有时候我们需要从 store 中的 state 中派生出一些状态，例如对列表进行过滤并计数：
 
@@ -14,12 +14,16 @@ computed: {
 
 如果有多个组件需要用到此属性，我们要么复制这个函数，或者抽取到一个共享函数然后在多处导入它——无论哪种方式都不是很理想。
 
-Vuex 允许我们在 store 中定义“getter”（可以认为是 store 的计算属性）。就像计算属性一样，getter 的返回值会根据它的依赖被缓存起来，且只有当它的依赖值发生了改变才会被重新计算。
+Vuex 允许我们在 store 中定义“getter”（可以认为是 store 的计算属性）。
+
+::: warning 注意
+从 Vue 3.0 开始，getter 的结果不再像计算属性一样会被缓存起来。这是一个已知的问题，将会在 3.1 版本中修复。详情请看 [PR #1878](https://github.com/vuejs/vuex/pull/1883)。
+:::
 
 Getter 接受 state 作为其第一个参数：
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     todos: [
       { id: 1, text: '...', done: true },
@@ -27,7 +31,7 @@ const store = new Vuex.Store({
     ]
   },
   getters: {
-    doneTodos: state => {
+    doneTodos (state) => {
       return state.todos.filter(todo => todo.done)
     }
   }
@@ -47,7 +51,7 @@ Getter 也可以接受其他 getter 作为第二个参数：
 ``` js
 getters: {
   // ...
-  doneTodosCount: (state, getters) => {
+  doneTodosCount (state, getters) {
     return getters.doneTodos.length
   }
 }

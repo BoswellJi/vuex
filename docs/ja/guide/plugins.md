@@ -1,11 +1,11 @@
-# プラグイン
+# プラグイン 
 
 <div class="scrimba"><a href="https://scrimba.com/p/pnyzgAP/cvp8ZkCR" target="_blank" rel="noopener noreferrer">Scrimba のレッスンを試す</a></div>
 
 Vuex ストア は、各ミューテーションへのフックを公開する `plugins` オプションを受け付けます。 Vuex プラグインは、単一の引数としてストアを受けつけるただの関数です:
 
-``` js
-const myPlugin = store => {
+```js
+const myPlugin = (store) => {
   // ストアが初期化されたときに呼ばれます
   store.subscribe((mutation, state) => {
     // それぞれのミューテーションの後に呼ばれます
@@ -16,26 +16,26 @@ const myPlugin = store => {
 
 そして、このように利用することができます:
 
-``` js
-const store = new Vuex.Store({
+```js
+const store = createStore({
   // ...
   plugins: [myPlugin]
 })
 ```
 
-### プラグイン内でのミューテーションのコミット
+## プラグイン内でのミューテーションのコミット
 
 プラグインは直接、状態を変更できません。これはコンポーネントに似ています。プラグインはコンポーネント同様に、ミューテーションのコミットをトリガーすることで状態を変更できます。
 
 ミューテーションのコミットによるストアとデータソースの同期をプラグインで実現できます。 websocket データソースとストアを例にします (これは不自然で作為的な例です。実際には `createWebSocketPlugin` 関数は、さらに複雑なタスクのために追加でいくつかのオプションを受け取れます):
 
-``` js
+```js
 export default function createWebSocketPlugin (socket) {
-  return store => {
+  return (store) => {
     socket.on('data', data => {
-      store.commit('RECEIVE_DATA', data)
+      store.commit('receiveData', data)
     })
-    store.subscribe((mutation) => {
+    store.subscribe(mutation => {
       if (mutation.type === 'UPDATE_DATA') {
         socket.emit('update', mutation.payload)
       }
@@ -44,22 +44,22 @@ export default function createWebSocketPlugin (socket) {
 }
 ```
 
-``` js
+```js
 const plugin = createWebSocketPlugin(socket)
 
-const store = new Vuex.Store({
+const store = createStore({
   state,
   mutations,
   plugins: [plugin]
 })
 ```
 
-### 状態のスナップショットを撮る
+## 状態のスナップショットを撮る
 
 時々、状態の"スナップショット"を撮って、ミューテーション前後の状態を比較したくなることがあるでしょう。それを実現するために、状態オブジェクトのディープコピーを行う必要があります:
 
-``` js
-const myPluginWithSnapshot = store => {
+```js
+const myPluginWithSnapshot = (store) => {
   let prevState = _.cloneDeep(store.state)
   store.subscribe((mutation, state) => {
     let nextState = _.cloneDeep(state)
@@ -74,8 +74,8 @@ const myPluginWithSnapshot = store => {
 
 **状態のスナップショットを撮るプラグインはアプリケーションの開発の間だけ使われるべきです。**  webpack や Browserify を使っていれば、ビルドツールにそれを処理させることができます:
 
-``` js
-const store = new Vuex.Store({
+```js
+const store = createStore({
   // ...
   plugins: process.env.NODE_ENV !== 'production'
     ? [myPluginWithSnapshot]
@@ -85,23 +85,21 @@ const store = new Vuex.Store({
 
 上のように記述すれば、プラグインはデフォルトで利用されることになります。本番環境( production ) では、 `process.env.NODE_ENV !== 'production'` を `false` に置き換えるために、 webpack では[DefinePlugin](https://webpack.js.org/plugins/define-plugin/) 、 Browserify では[envify](https://github.com/hughsk/envify) が必要になります。
 
-### ビルトインロガープラグイン
-
-> もし、あなたが [vue-devtools](https://github.com/vuejs/vue-devtools) を使っている場合は、これは不要でしょう。
+## ビルトインロガープラグイン
 
 Vuex には、一般的なデバッグに利用する用途の備え付けのロガープラグインがあります。
 
 ```js
-import createLogger from 'vuex/dist/logger'
+import { createLogger } from 'vuex'
 
-const store = new Vuex.Store({
+const store = createStore({
   plugins: [createLogger()]
 })
 ```
 
 `createLogger` 関数はいくつかのオプションを受け取ります:
 
-``` js
+```js
 const logger = createLogger({
   collapsed: false, // ログ出力されたミューテーションを自動で展開します
   filter (mutation, stateBefore, stateAfter) {
@@ -119,14 +117,14 @@ const logger = createLogger({
     // 例えば、特定のサブツリーのみを返します
     return state.subTree
   },
-  actionTransformer (action) {
-    // `mutationTransformer` と同等ですが、アクション用です
-    return action.type
-  },
   mutationTransformer (mutation) {
     // ミューテーションは、`{ type, payload }` の形式でログ出力されます
     // 任意の方法でそれをフォーマットできます
     return mutation.type
+  },
+  actionTransformer (action) {
+    // `mutationTransformer` と同等ですが、アクション用です
+    return action.type
   },
   logActions: true, // アクションログを出力します。
   logMutations: true, // ミューテーションログを出力します。

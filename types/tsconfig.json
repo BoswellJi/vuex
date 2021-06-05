@@ -7,6 +7,9 @@
       "esnext",
       "dom"
     ],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noEmit": true
   },

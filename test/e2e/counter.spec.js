@@ -3,8 +3,8 @@ import { setupPuppeteer, E2E_TIMEOUT } from 'test/helpers'
 describe('e2e/counter', () => {
   const { page, text, click, sleep } = setupPuppeteer()
 
-  test('counter app', async () => {
-    await page().goto('http://localhost:8080/counter/')
+  async function testCounter (url) {
+    await page().goto(url)
     expect(await text('#app')).toContain('Clicked: 0 times')
 
     await click('button:nth-child(1)')
@@ -26,5 +26,13 @@ describe('e2e/counter', () => {
     expect(await text('#app')).toContain('Clicked: 2 times')
     await sleep(1000)
     expect(await text('#app')).toContain('Clicked: 3 times')
+  }
+
+  test('classic', async () => {
+    await testCounter('http://localhost:8080/classic/counter/')
+  }, E2E_TIMEOUT)
+
+  test('composition', async () => {
+    await testCounter('http://localhost:8080/composition/counter/')
   }, E2E_TIMEOUT)
 })

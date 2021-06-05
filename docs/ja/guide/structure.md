@@ -12,7 +12,7 @@ Vuex は実際のところ、あなたがコードを構造化する方法を制
 
 それなりに手の込んだアプリケーションであれば、モジュールを活用する必要が出てきそうです。プロジェクトの構造の例は以下のようになります:
 
-``` bash
+```bash
 ├── index.html
 ├── main.js
 ├── api
@@ -29,4 +29,4 @@ Vuex は実際のところ、あなたがコードを構造化する方法を制
         └── products.js   # products モジュール
 ```
 
-参考として [Shopping Cart Example](https://github.com/vuejs/vuex/tree/dev/examples/shopping-cart) をみてみるのもよいでしょう。
+参考として [Shopping Cart Example](https://github.com/vuejs/vuex/tree/4.0/examples/classic/shopping-cart) をみてみるのもよいでしょう。

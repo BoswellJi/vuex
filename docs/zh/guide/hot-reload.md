@@ -6,16 +6,13 @@
 
 ``` js
 // store.js
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 import mutations from './mutations'
 import moduleA from './modules/a'
 
-Vue.use(Vuex)
-
 const state = { ... }
 
-const store = new Vuex.Store({
+const store = createStore({
   state,
   mutations,
   modules: {
@@ -49,8 +46,7 @@ if (module.hot) {
 
 ```js
 // store.js
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 
 // 加载所有模块。
 function loadModules() {
@@ -72,9 +68,7 @@ function loadModules() {
 
 const { context, modules } = loadModules()
 
-Vue.use(Vuex)
-
-const store = new Vuex.Store({
+const store = new createStore({
   modules
 })
 

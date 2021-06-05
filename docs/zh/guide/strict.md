@@ -3,7 +3,7 @@
 开启严格模式，仅需在创建 store 的时候传入 `strict: true`：
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   // ...
   strict: true
 })
@@ -18,7 +18,7 @@ const store = new Vuex.Store({
 类似于插件，我们可以让构建工具来处理这种情况：
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   // ...
   strict: process.env.NODE_ENV !== 'production'
 })

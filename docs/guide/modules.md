@@ -20,7 +20,7 @@ const moduleB = {
   actions: { ... }
 }
 
-const store = new Vuex.Store({
+const store = createStore({
   modules: {
     a: moduleA,
     b: moduleB
@@ -46,7 +46,6 @@ const moduleA = {
       state.count++
     }
   },
-
   getters: {
     doubleCount (state) {
       return state.count * 2
@@ -90,7 +89,7 @@ By default, actions and mutations are still registered under the **global namesp
 If you want your modules to be more self-contained or reusable, you can mark it as namespaced with `namespaced: true`. When the module is registered, all of its getters, actions and mutations will be automatically namespaced based on the path the module is registered at. For example:
 
 ```js
-const store = new Vuex.Store({
+const store = createStore({
   modules: {
     account: {
       namespaced: true,
@@ -292,9 +291,9 @@ export function createPlugin (options = {}) {
 You can register a module **after** the store has been created with the `store.registerModule` method:
 
 ```js
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 
-const store = new Vuex.Store({ /* options */ })
+const store = createStore({ /* options */ })
 
 // register a module `myModule`
 store.registerModule('myModule', {
@@ -313,7 +312,7 @@ Dynamic module registration makes it possible for other Vue plugins to also leve
 
 You can also remove a dynamically registered module with `store.unregisterModule(moduleName)`. Note you cannot remove static modules (declared at store creation) with this method.
 
-Note that you may check if the module is already registered to the store or not via `store.hasModule(moduleName)` method.
+Note that you may check if the module is already registered to the store or not via `store.hasModule(moduleName)` method. One thing to keep in mind is that nested modules should be passed as arrays for both the `registerModule` and `hasModule` and not as a string with the path to the module.
 
 ### Preserving state
 

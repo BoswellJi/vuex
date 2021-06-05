@@ -1,4 +1,25 @@
+import { createApp } from 'vue'
 import puppeteer from 'puppeteer'
+
+export function mount (store, component) {
+  const el = createElement()
+
+  component.render = () => {}
+
+  const app = createApp(component)
+
+  app.use(store)
+
+  return app.mount(el)
+}
+
+function createElement () {
+  const el = document.createElement('div')
+
+  document.body.appendChild(el)
+
+  return el
+}
 
 export const E2E_TIMEOUT = 30 * 1000
 
@@ -129,4 +150,3 @@ export function setupPuppeteer () {
     sleep
   }
 }
-

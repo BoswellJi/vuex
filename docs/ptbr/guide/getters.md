@@ -14,12 +14,12 @@ computed: {
 
 Se mais do que um componente precisa fazer uso disso, temos que duplicar a função, ou extraí-lo em um auxiliar compartilhado e importá-lo em vários lugares - ambos são menos do que o ideal.
 
-O Vuex nos permite definir _getters_ no _store_. Você pode pensar neles como dados computados para os _stores_. Como os dados computados, o resultado de um _getter_ é armazenado em cache com base em suas dependências e só será reavaliado quando algumas de suas dependências forem alteradas.
+O Vuex nos permite definir _getters_ no _store_. Você pode pensar neles como dados computados para os _stores_. Como os dados computados, o resultado de um _getter_ é armazenado em _cache_ com base em suas dependências e só será reavaliado quando algumas de suas dependências forem alteradas.
 
 Os _getters_ receberão o estado como 1º argumento:
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     todos: [
       { id: 1, text: '...', done: true },
@@ -27,14 +27,14 @@ const store = new Vuex.Store({
     ]
   },
   getters: {
-    doneTodos: state => {
+    doneTodos (state) {
       return state.todos.filter(todo => todo.done)
     }
   }
 })
 ```
 
-### Acesso Estilo-Propriedade
+## Acesso Estilo-Propriedade
 
 Os _getters_ serão expostos no objeto `store.getters` e você acessa valores como propriedades:
 
@@ -42,12 +42,12 @@ Os _getters_ serão expostos no objeto `store.getters` e você acessa valores co
 store.getters.doneTodos // -> [{ id: 1, text: '...', done: true }]
 ```
 
-Os _getters_ também receberão outros `getters` como o 2º argumento:
+Os _getters_ também recebem outros _getters_ como o 2º argumento:
 
 ``` js
 getters: {
   // ...
-  doneTodosCount: (state, getters) => {
+  doneTodosCount (state, getters) {
     return getters.doneTodos.length
   }
 }
@@ -67,9 +67,9 @@ computed: {
 }
 ```
 
-Observe que os _getters_ acessados ​​como propriedades são armazenados em cache como parte do sistema de reatividade do Vue.
+Observe que os _getters_ acessados ​​como propriedades são armazenados em _cache_ como parte do sistema de reatividade do Vue.
 
-### Acesso Estilo-Método
+## Acesso Estilo-Método
 
 Você também pode passar argumentos para os _getters_ retornando uma função. Isso é particularmente útil quando você deseja consultar um _Array_ no _store_:
 
@@ -86,11 +86,11 @@ getters: {
 store.getters.getTodoById(2) // -> { id: 2, text: '...', done: false }
 ```
 
-Observe que os _getters_ acessados ​​via métodos serão executados toda vez que você os chamar, e o resultado não será armazenado em cache.
+Observe que os _getters_ acessados ​​via métodos serão executados toda vez que você os chamar, e o resultado não será armazenado em _cache_.
 
-### O Auxiliar `mapGetters`
+## O Auxiliar `mapGetters`
 
-O auxiliar `mapGetters` simplesmente mapeia os _getters_ do _store_ para os dados computados locais:
+O auxiliar _mapGetters_ simplesmente mapeia os _getters_ do _store_ para os dados computados locais:
 
 ``` js
 import { mapGetters } from 'vuex'

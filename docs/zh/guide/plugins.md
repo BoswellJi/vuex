@@ -5,7 +5,7 @@
 Vuex 的 store 接受 `plugins` 选项，这个选项暴露出每次 mutation 的钩子。Vuex 插件就是一个函数，它接收 store 作为唯一参数：
 
 ``` js
-const myPlugin = store => {
+const myPlugin = (store) => {
   // 当 store 初始化后调用
   store.subscribe((mutation, state) => {
     // 每次 mutation 之后调用
@@ -17,7 +17,7 @@ const myPlugin = store => {
 然后像这样使用：
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   // ...
   plugins: [myPlugin]
 })
@@ -31,7 +31,7 @@ const store = new Vuex.Store({
 
 ``` js
 export default function createWebSocketPlugin (socket) {
-  return store => {
+  return (store) => {
     socket.on('data', data => {
       store.commit('receiveData', data)
     })
@@ -47,7 +47,7 @@ export default function createWebSocketPlugin (socket) {
 ``` js
 const plugin = createWebSocketPlugin(socket)
 
-const store = new Vuex.Store({
+const store = createStore({
   state,
   mutations,
   plugins: [plugin]
@@ -59,7 +59,7 @@ const store = new Vuex.Store({
 有时候插件需要获得状态的“快照”，比较改变的前后状态。想要实现这项功能，你需要对状态对象进行深拷贝：
 
 ``` js
-const myPluginWithSnapshot = store => {
+const myPluginWithSnapshot = (store) => {
   let prevState = _.cloneDeep(store.state)
   store.subscribe((mutation, state) => {
     let nextState = _.cloneDeep(state)
@@ -75,7 +75,7 @@ const myPluginWithSnapshot = store => {
 **生成状态快照的插件应该只在开发阶段使用**，使用 webpack 或 Browserify，让构建工具帮我们处理：
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   // ...
   plugins: process.env.NODE_ENV !== 'production'
     ? [myPluginWithSnapshot]
@@ -86,8 +86,6 @@ const store = new Vuex.Store({
 上面插件会默认启用。在发布阶段，你需要使用 webpack 的 [DefinePlugin](https://webpack.js.org/plugins/define-plugin/) 或者是 Browserify 的 [envify](https://github.com/hughsk/envify) 使 `process.env.NODE_ENV !== 'production'` 为 `false`。
 
 ### 内置 Logger 插件
-
-> 如果正在使用 [vue-devtools](https://github.com/vuejs/vue-devtools)，你可能不需要此插件。
 
 Vuex 自带一个日志插件用于一般的调试:
 

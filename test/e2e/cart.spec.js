@@ -3,8 +3,8 @@ import { setupPuppeteer, E2E_TIMEOUT } from 'test/helpers'
 describe('e2e/cart', () => {
   const { page, text, count, click, sleep } = setupPuppeteer()
 
-  test('cart app', async () => {
-    await page().goto('http://localhost:8080/shopping-cart/')
+  async function testCart (url) {
+    await page().goto(url)
 
     await sleep(120) // api simulation
 
@@ -33,5 +33,13 @@ describe('e2e/cart', () => {
     expect(await text('.cart')).toContain('Total: $0.00')
     expect(await text('.cart')).toContain('Checkout successful')
     expect(await count('.cart button[disabled]')).toBe(1)
+  }
+
+  test('classic', async () => {
+    await testCart('http://localhost:8080/classic/shopping-cart/')
+  }, E2E_TIMEOUT)
+
+  test('composition', async () => {
+    await testCart('http://localhost:8080/composition/shopping-cart/')
   }, E2E_TIMEOUT)
 })

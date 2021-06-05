@@ -2,10 +2,10 @@
 
 ## Direct Download / CDN
 
-[https://unpkg.com/vuex](https://unpkg.com/vuex)
+[https://unpkg.com/vuex@4](https://unpkg.com/vuex@4)
 
 <!--email_off-->
-[Unpkg.com](https://unpkg.com) provides NPM-based CDN links. The above link will always point to the latest release on NPM. You can also use a specific version/tag via URLs like `https://unpkg.com/vuex@2.0.0`.
+[Unpkg.com](https://unpkg.com) provides NPM-based CDN links. The above link will always point to the latest release on NPM. You can also use a specific version/tag via URLs like `https://unpkg.com/vuex@4.0.0/dist/vuex.global.js`.
 <!--/email_off-->
 
 Include `vuex` after Vue and it will install itself automatically:
@@ -18,25 +18,14 @@ Include `vuex` after Vue and it will install itself automatically:
 ## NPM
 
 ```bash
-npm install vuex --save
+npm install vuex@next --save
 ```
 
 ## Yarn
 
 ```bash
-yarn add vuex
+yarn add vuex@next --save
 ```
-
-When used with a module system, you must explicitly install Vuex as a plugin:
-
-```js
-import Vue from 'vue'
-import Vuex from 'vuex'
-
-Vue.use(Vuex)
-```
-
-You don't need to do this when using global script tags.
 
 ## Promise
 
@@ -70,6 +59,6 @@ You will have to clone directly from GitHub and build `vuex` yourself if you wan
 ```bash
 git clone https://github.com/vuejs/vuex.git node_modules/vuex
 cd node_modules/vuex
-npm install
-npm run build
+yarn
+yarn build
 ```

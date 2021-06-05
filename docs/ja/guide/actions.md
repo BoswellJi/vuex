@@ -10,7 +10,7 @@
 シンプルなアクションを登録してみましょう:
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     count: 0
   },
@@ -39,7 +39,7 @@ actions: {
 }
 ```
 
-### アクションのディスパッチ
+## アクションのディスパッチ
 
 アクションは `store.dispatch` がトリガーとなって実行されます:
 
@@ -97,7 +97,7 @@ actions: {
 
 一連の非同期の処理を実行しつつ、ミューテーションのコミットによってのみ副作用（状態の変更）を与えていることに注意してください。
 
-### コンポーネント内でのアクションのディスパッチ
+## コンポーネント内でのアクションのディスパッチ
 
 `this.$store.dispatch('xxx')` でコンポーネント内でアクションをディスパッチできます。あるいはコンポーネントのメソッドを `store.dispatch` にマッピングする `mapActions` ヘルパーを使うこともできます（ルートの `store` の注入が必要です）:
 
@@ -108,7 +108,8 @@ export default {
   // ...
   methods: {
     ...mapActions([
-      'increment', // `this.increment()` を `this.$store.dispatch('increment')` にマッピングする
+      'increment', // `this.increment()` を `this.$store.dispatch('increment')` にマッピングする('increment')`
+
       // `mapActions` もペイロードをサポートする:
       'incrementBy' // `this.incrementBy(amount)` を `this.$store.dispatch('incrementBy', amount)` にマッピングする
     ]),
@@ -119,7 +120,7 @@ export default {
 }
 ```
 
-### アクションを構成する
+## アクションを構成する
 
 アクションはしばしば非同期処理を行いますが、アクションが完了したことをどうやって知れば良いのでしょう？そしてもっと重要なことは、さらに複雑な非同期処理を取り扱うために、どうやって複数のアクションを構成させるかということです。
 

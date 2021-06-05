@@ -14,12 +14,16 @@ computed: {
 
 If more than one component needs to make use of this, we have to either duplicate the function, or extract it into a shared helper and import it in multiple places - both are less than ideal.
 
-Vuex allows us to define "getters" in the store. You can think of them as computed properties for stores. Like computed properties, a getter's result is cached based on its dependencies, and will only re-evaluate when some of its dependencies have changed.
+Vuex allows us to define "getters" in the store. You can think of them as computed properties for stores.
+
+::: warning WARNING
+As of Vue 3.0, the getter's result is **not cached** as the computed property does. This is a known issue that requires Vue 3.1 to be released. You can learn more at [PR #1878](https://github.com/vuejs/vuex/pull/1883).
+:::
 
 Getters will receive the state as their 1st argument:
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     todos: [
       { id: 1, text: '...', done: true },
@@ -27,7 +31,7 @@ const store = new Vuex.Store({
     ]
   },
   getters: {
-    doneTodos: state => {
+    doneTodos (state) {
       return state.todos.filter(todo => todo.done)
     }
   }
@@ -47,7 +51,7 @@ Getters will also receive other getters as the 2nd argument:
 ``` js
 getters: {
   // ...
-  doneTodosCount: (state, getters) => {
+  doneTodosCount (state, getters) {
     return getters.doneTodos.length
   }
 }

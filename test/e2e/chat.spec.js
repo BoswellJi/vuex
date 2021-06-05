@@ -3,8 +3,8 @@ import { setupPuppeteer, E2E_TIMEOUT } from 'test/helpers'
 describe('e2e/chat', () => {
   const { page, text, count, click, enterValue, sleep } = setupPuppeteer()
 
-  test('chat app', async () => {
-    await page().goto('http://localhost:8080/chat/')
+  async function testChat (url) {
+    await page().goto(url)
 
     expect(await text('.thread-count')).toContain('Unread threads: 2')
     expect(await count('.thread-list-item')).toBe(3)
@@ -30,5 +30,13 @@ describe('e2e/chat', () => {
     await sleep(50) // fake api
     expect(await count('.message-list-item')).toBe(3)
     expect(await text('.message-list-item:nth-child(3)')).toContain('hi')
+  }
+
+  test('classic', async () => {
+    await testChat('http://localhost:8080/classic/chat/')
+  }, E2E_TIMEOUT)
+
+  test('composition', async () => {
+    await testChat('http://localhost:8080/composition/chat/')
   }, E2E_TIMEOUT)
 })

@@ -14,12 +14,16 @@ computed: {
 
 もしこの関数を複数のコンポーネントで利用したくなったら、関数をコピーするか、あるいは関数を共用のヘルパーに切り出して複数の場所でインポートする必要があります。しかし、どちらも理想的とはいえません。
 
-Vuex を利用するとストア内に "ゲッター" を定義することができます。それらをストアの算出プロパティと考えることができます。算出プロパティと同様に、ゲッターの結果はその依存関係に基づいて計算され、依存関係の一部が変更されたときにのみ再評価されます。
+Vuex を利用するとストア内に "ゲッター" を定義することができます。それらをストアの算出プロパティと考えることができます。
+
+::: warning 警告
+Vue 3.0 では、ゲッターの結果は算出プロパティのように**キャッシュされません**。これは既知の問題で、Vue 3.1 がリリースされる必要があります。詳細は [PR #1878](https://github.com/vuejs/vuex/pull/1883) をご確認ください。
+:::
 
 ゲッターは第1引数として、state を受け取ります:
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     todos: [
       { id: 1, text: '...', done: true },
@@ -27,14 +31,14 @@ const store = new Vuex.Store({
     ]
   },
   getters: {
-    doneTodos: state => {
+    doneTodos (state) {
       return state.todos.filter(todo => todo.done)
     }
   }
 })
 ```
 
-### プロパティスタイルアクセス
+## プロパティスタイルアクセス
 
 ゲッターは `store.getters` オブジェクトから取り出され、プロパティとしてアクセスすることができます:
 
@@ -47,7 +51,7 @@ store.getters.doneTodos // -> [{ id: 1, text: '...', done: true }]
 ``` js
 getters: {
   // ...
-  doneTodosCount: (state, getters) => {
+  doneTodosCount (state, getters) {
     return getters.doneTodos.length
   }
 }
@@ -69,7 +73,7 @@ computed: {
 
 プロパティとしてアクセスされるゲッターは Vue のリアクティブシステムの一部としてキャッシュされるという点に留意してください。
 
-### メソッドスタイルアクセス
+## メソッドスタイルアクセス
 
 関数を返り値にすることで、ゲッターに引数を渡すこともできます。これは特にストアの中の配列を検索する時に役立ちます：
 ```js
@@ -87,7 +91,7 @@ store.getters.getTodoById(2) // -> { id: 2, text: '...', done: false }
 
 メソッドによってアクセスされるゲッターは呼び出す度に実行され、その結果はキャッシュされない点に留意してください。
 
-### `mapGetters` ヘルパー
+## `mapGetters` ヘルパー
 
 `mapGetters` ヘルパーはストアのゲッターをローカルの算出プロパティにマッピングさせます:
 

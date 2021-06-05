@@ -1,5 +1,5 @@
-import Vue from 'vue'
-import Vuex, { mapState, mapMutations, mapGetters, mapActions, createNamespacedHelpers } from '../../src/index'
+import { mount } from 'test/helpers'
+import Vuex, { mapState, mapMutations, mapGetters, mapActions, createNamespacedHelpers } from '@/index'
 
 describe('Helpers', () => {
   it('mapState (array)', () => {
@@ -8,8 +8,7 @@ describe('Helpers', () => {
         a: 1
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapState(['a'])
     })
     expect(vm.a).toBe(1)
@@ -26,8 +25,7 @@ describe('Helpers', () => {
         b: () => 2
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapState({
         a: (state, getters) => {
           return state.a + getters.b
@@ -51,8 +49,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapState('foo', {
         a: (state, getters) => {
           return state.a + getters.b
@@ -83,8 +80,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapState('foo', {
         value: state => state
       })
@@ -104,8 +100,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapState('foo')
     })
     expect(vm.a).toBeUndefined()
@@ -120,8 +115,7 @@ describe('Helpers', () => {
         dec: state => state.count--
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapMutations(['inc', 'dec'])
     })
     vm.inc()
@@ -138,8 +132,7 @@ describe('Helpers', () => {
         dec: state => state.count--
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapMutations({
         plus: 'inc',
         minus: 'dec'
@@ -160,8 +153,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapMutations({
         plus (commit, amount) {
           commit('inc', amount + 1)
@@ -185,8 +177,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapMutations('foo', {
         plus: 'inc',
         minus: 'dec'
@@ -212,8 +203,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapMutations('foo', {
         plus (commit, amount) {
           commit('inc', amount + 1)
@@ -238,8 +228,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapMutations('foo')
     })
     expect(vm.inc).toBeUndefined()
@@ -259,8 +248,7 @@ describe('Helpers', () => {
         negative: ({ count }) => count < 0
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapGetters(['hasAny', 'negative'])
     })
     expect(vm.hasAny).toBe(false)
@@ -286,8 +274,7 @@ describe('Helpers', () => {
         negative: ({ count }) => count < 0
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapGetters({
         a: 'hasAny',
         b: 'negative'
@@ -321,8 +308,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapGetters('foo', {
         a: 'hasAny',
         b: 'negative'
@@ -367,8 +353,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: {
         ...mapGetters('foo/bar', [
           'hasAny',
@@ -410,8 +395,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: mapGetters('foo')
     })
     expect(vm.a).toBeUndefined()
@@ -428,8 +412,7 @@ describe('Helpers', () => {
         b
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapActions(['a', 'b'])
     })
     vm.a()
@@ -448,8 +431,7 @@ describe('Helpers', () => {
         b
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapActions({
         foo: 'a',
         bar: 'b'
@@ -467,8 +449,7 @@ describe('Helpers', () => {
     const store = new Vuex.Store({
       actions: { a }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapActions({
         foo (dispatch, arg) {
           dispatch('a', arg + 'bar')
@@ -493,8 +474,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapActions('foo/', {
         foo: 'a',
         bar: 'b'
@@ -517,8 +497,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapActions('foo/', {
         foo (dispatch, arg) {
           dispatch('a', arg + 'bar')
@@ -542,8 +521,7 @@ describe('Helpers', () => {
         }
       }
     })
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       methods: mapActions('foo/')
     })
     expect(vm.a).toBeUndefined()
@@ -579,8 +557,7 @@ describe('Helpers', () => {
       mapMutations,
       mapActions
     } = createNamespacedHelpers('foo/')
-    const vm = new Vue({
-      store,
+    const vm = mount(store, {
       computed: {
         ...mapState(['count']),
         ...mapGetters(['isEven'])

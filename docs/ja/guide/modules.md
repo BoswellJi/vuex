@@ -6,7 +6,7 @@
 
 そのような場合に役立てるため Vuex ではストアを**モジュール**に分割できるようになっています。それぞれのモジュールは、モジュール自身の状態（state）、ミューテーション、アクション、ゲッター、モジュールさえも内包できます（モジュールをネストできます）- トップからボトムまでフラクタル構造です:
 
-``` js
+```js
 const moduleA = {
   state: () => ({ ... }),
   mutations: { ... },
@@ -20,7 +20,7 @@ const moduleB = {
   actions: { ... }
 }
 
-const store = new Vuex.Store({
+const store = createStore({
   modules: {
     a: moduleA,
     b: moduleB
@@ -31,11 +31,11 @@ store.state.a // -> `moduleA` のステート
 store.state.b // -> `moduleB` のステート
 ```
 
-### モジュールのローカルステート
+## モジュールのローカルステート
 
-モジュールのミューテーションやゲッターの中では、渡される第1引数は**モジュールのローカルステート**です。
+モジュールのミューテーションやゲッターの中では、渡される第 1 引数は**モジュールのローカルステート**です。
 
-``` js
+```js
 const moduleA = {
   state: () => ({
     count: 0
@@ -46,7 +46,6 @@ const moduleA = {
       state.count++
     }
   },
-
   getters: {
     doubleCount (state) {
       return state.count * 2
@@ -57,7 +56,7 @@ const moduleA = {
 
 同様に、モジュールのアクションの中では `context.state` はローカルステートにアクセスでき、ルートのステートは `context.rootState` でアクセスできます:
 
-``` js
+```js
 const moduleA = {
   // ...
   actions: {
@@ -72,7 +71,7 @@ const moduleA = {
 
 また、モジュールのゲッターの中では、ルートのステートは第3引数でアクセスできます:
 
-``` js
+```js
 const moduleA = {
   // ...
   getters: {
@@ -83,14 +82,14 @@ const moduleA = {
 }
 ```
 
-### 名前空間
+## 名前空間
 
 デフォルトでは、モジュール内部のアクション、ミューテーション、そしてゲッターは**グローバル名前空間**の元で登録されます - これにより、複数のモジュールが同じミューテーション/アクションタイプに反応することができます。
 
 モジュールをより自己完結型にまた再利用可能なものにしたい場合は、それを `namespaced: true` によって名前空間に分けることができます。モジュールが登録されると、そのゲッター、アクション、およびミューテーションのすべてが、モジュールが登録されているパスに基づいて自動的に名前空間に入れられます。例えば:
 
-``` js
-const store = new Vuex.Store({
+```js
+const store = createStore({
   modules: {
     account: {
       namespaced: true,
@@ -134,13 +133,13 @@ const store = new Vuex.Store({
 
 名前空間のゲッターとアクションは、ローカライズされた `getters`、`dispatch`、`commit` を受け取ります。言い換えれば、同じモジュールに接頭辞 (prefix) を書き込まずに、モジュールアセットを使用することができます。名前空間オプションの切り替えは、モジュール内のコードには影響しません。
 
-#### 名前空間付きモジュールでのグローバルアセットへのアクセス
+### 名前空間付きモジュールでのグローバルアセットへのアクセス
 
 グローバルステートとゲッターを使いたい場合、`rootState` と `rootGetters` はゲッター関数の第3引数と第4引数として渡され、アクション関数に渡される `context` オブジェクトのプロパティとしても公開されます。
 
 アクションをディスパッチするか、グローバル名前空間にミューテーションをコミットするには、`dispatch` と `commit` の3番目の引数として `{root: true}` を渡します。
 
-``` js
+```js
 modules: {
   foo: {
     namespaced: true,
@@ -151,6 +150,7 @@ modules: {
       someGetter (state, getters, rootState, rootGetters) {
         getters.someOtherGetter // -> 'foo/someOtherGetter'
         rootGetters.someOtherGetter // -> 'someOtherGetter'
+        rootGetters['bar/someOtherGetter'] // -> 'bar/someOtherGetter'
       },
       someOtherGetter: state => { ... }
     },
@@ -161,6 +161,7 @@ modules: {
       someAction ({ dispatch, commit, getters, rootGetters }) {
         getters.someGetter // -> 'foo/someGetter'
         rootGetters.someGetter // -> 'someGetter'
+        rootGetters['bar/someGetter'] // -> 'bar/someGetter'
 
         dispatch('someOtherAction') // -> 'foo/someOtherAction'
         dispatch('someOtherAction', null, { root: true }) // -> 'someOtherAction'
@@ -174,11 +175,11 @@ modules: {
 }
 ```
 
-#### 名前空間付きモジュールでのグローバルアクションへの登録
+### 名前空間付きモジュールでのグローバルアクションへの登録
 
 名前空間付きモジュールでグローバルアクションに登録したい場合、`root: true` でそれをマークでき、そしてアクション定義を `handler` 関数に置くことができます。例えば:
 
-``` js
+```js
 {
   actions: {
     someOtherAction ({dispatch}) {
@@ -188,7 +189,8 @@ modules: {
   modules: {
     foo: {
       namespaced: true,
-       actions: {
+
+      actions: {
         someAction: {
           root: true,
           handler (namespacedContext, payload) { ... } // -> 'someAction'
@@ -199,17 +201,20 @@ modules: {
 }
 ```
 
-
-#### 名前空間によるバインディングヘルパー
+### 名前空間によるバインディングヘルパー
 
 `mapState`、`mapGetters`、`mapActions`、そして `mapMutations` ヘルパーを使って名前空間付きモジュールをコンポーネントにバインディングするとき、少し冗長になります:
 
-``` js
+```js
 computed: {
   ...mapState({
     a: state => state.some.nested.module.a,
     b: state => state.some.nested.module.b
-  })
+  }),
+  ...mapGetters([
+    'some/nested/module/someGetter', // -> this['some/nested/module/someGetter']
+    'some/nested/module/someOtherGetter', // -> this['some/nested/module/someOtherGetter']
+  ])
 },
 methods: {
   ...mapActions([
@@ -221,12 +226,16 @@ methods: {
 
 このような場合は、第1引数としてモジュールの名前空間文字列をヘルパーに渡すことで、そのモジュールをコンテキストとして使用してすべてのバインディングを行うことができます。上記は次のように単純化できます。
 
-``` js
+```js
 computed: {
   ...mapState('some/nested/module', {
     a: state => state.a,
     b: state => state.b
-  })
+  }),
+  ...mapGetters('some/nested/module', [
+    'someGetter', // -> this.someGetter
+    'someOtherGetter', // -> this.someOtherGetter
+  ])
 },
 methods: {
   ...mapActions('some/nested/module', [
@@ -238,7 +247,7 @@ methods: {
 
 さらに、`createNamespacedHelpers` を使用することによって名前空間付けされたヘルパーを作成できます。指定された名前空間の値にバインドされた新しいコンポーネントバインディングヘルパーを持つオブジェクトを返します:
 
-``` js
+```js
 import { createNamespacedHelpers } from 'vuex'
 
 const { mapState, mapActions } = createNamespacedHelpers('some/nested/module')
@@ -261,27 +270,31 @@ export default {
 }
 ```
 
-#### プラグイン開発者向けの注意事項
+### プラグイン開発者向けの注意事項
 
 モジュールを提供する[プラグイン](plugins.md)を作成し、ユーザーがそれらを Vuex ストアに追加できるようにすると、モジュールの予測できない名前空間が気になるかもしれません。あなたのモジュールは、プラグインユーザーが名前空間付きモジュールの元にモジュールを追加すると、その名前空間に属するようになります。この状況に適応するには、プラグインオプションを使用して名前空間の値を受け取る必要があります。
 
-``` js
+```js
 // プラグインオプションで名前空間値を取得し、
 // そして、Vuex プラグイン関数を返す
 export function createPlugin (options = {}) {
   return function (store) {
-    /// 名前空間をプラグインモジュールの型に追加する
+    // 名前空間をプラグインモジュールの型に追加する
     const namespace = options.namespace || ''
     store.dispatch(namespace + 'pluginAction')
   }
 }
 ```
 
-### 動的にモジュールを登録する
+## 動的にモジュールを登録する
 
 ストアが作られた**後**に `store.registerModule` メソッドを使って、モジュールを登録できます:
 
-``` js
+```js
+import { createStore } from 'vuex'
+
+const store = createStore({ /* options */ })
+
 // `myModule` モジュールを登録します
 store.registerModule('myModule', {
   // ...
@@ -299,26 +312,27 @@ store.registerModule(['nested', 'myModule'], {
 
 `store.unregisterModule(moduleName)` を呼び出せば、動的に登録したモジュールを削除できます。ただしストア作成（store creation）の際に宣言された、静的なモジュールはこのメソッドで削除できないことに注意してください。
 
-また、すでにモジュールが登録されているかどうかを `store.hasModule(moduleName)` メソッドを使って確認することができます。
+また、すでにモジュールが登録されているかどうかを `store.hasModule(moduleName)` メソッドを使って確認することができます。 One thing to keep in mind is that nested modules should be passed as arrays for both the `registerModule` and `hasModule` and not as a string with the path to the module.
+留意すべき点は、入れ子になっているモジュールは、`registerModule` と `hasModule` の両方に、モジュールへのパスを文字列として渡すのではなく、配列として渡す必要があるということです。
 
-#### ステートの保持
+### ステートの保持
 
 サーバサイドレンダリングされたアプリケーションから状態を保持するなど、新しいモジュールを登録するときに、以前の状態を保持したい場合があります。`preserveState` オプション（`store.registerModule('a', module, { preserveState: true })`）でこれを実現できます。
 
 `preserveState: true` を設定した場合、モジュールを登録する際に、アクション、ミューテーション、そしてゲッターは追加されますがステートは追加されません。これはストアのステートはすでにモジュールのステートを登録しているので、それを上書きしないようにするためです。
 
-### モジュールの再利用
+## モジュールの再利用
 
 時どき、モジュールの複数インスタンスを作成する必要があるかもしれません。例えば:
 
-- 同じモジュールを使用する複数のストアを作成する;
+- 同じモジュールを使用する複数のストアを作成する(例: `runInNewContext` オプションが `false` または `'once'` のとき、[SSR でステートフルなシングルトンを避けるためです](https://ssr.vuejs.org/ja/structure.html#ステートフルなシングルトンの回避)。)
 - 同じストアに同じモジュールを複数回登録する
 
-モジュールの状態を宣言するために単純なオブジェクトを使用すると、その状態オブジェクトは参照によって共有され、変更時にクロスストア/モジュールの状態汚染を引き起こします。(例: `runInNewContext` オプションが `false` または `'once'` のとき、[SSR でステートフルなシングルトンを避けるためです](https://ssr.vuejs.org/ja/structure.html#ステートフルなシングルトンの回避)。)
+モジュールの状態を宣言するために単純なオブジェクトを使用すると、その状態オブジェクトは参照によって共有され、変更時にクロスストア/モジュールの状態汚染を引き起こします。
 
 これは、実際には Vue コンポーネント内部の `data` と全く同じ問題です。従って解決策も同じです。モジュールの状態を宣言するために関数を使用してください (2.3.0 以降でサポートされます):
 
-``` js
+```js
 const MyReusableModule = {
   state: () => ({
     foo: 'bar'

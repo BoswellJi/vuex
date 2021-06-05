@@ -1,6 +1,6 @@
 # Action
 
-<div class="scrimba"><a href="https://scrimba.com/p/pnyzgAP/c6ggR3cG" target="_blank" rel="noopener noreferrer">在 scrimba 上尝试这节课</a></div>
+<div class="scrimba"><a href="https://scrimba.com/p/pnyzgAP/c6ggR3cG" target="_blank" rel="noopener noreferrer">在 Scrimba 上尝试这节课</a></div>
 
 Action 类似于 mutation，不同在于：
 
@@ -10,7 +10,7 @@ Action 类似于 mutation，不同在于：
 让我们来注册一个简单的 action：
 
 ``` js
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     count: 0
   },
@@ -29,7 +29,7 @@ const store = new Vuex.Store({
 
 Action 函数接受一个与 store 实例具有相同方法和属性的 context 对象，因此你可以调用 `context.commit` 提交一个 mutation，或者通过 `context.state` 和 `context.getters` 来获取 state 和 getters。当我们在之后介绍到 [Modules](modules.md) 时，你就知道 context 对象为什么不是 store 实例本身了。
 
-实践中，我们会经常用到 ES2015 的 [参数解构](https://github.com/lukehoban/es6features#destructuring) 来简化代码（特别是我们需要调用 `commit` 很多次的时候）：
+实践中，我们会经常用到 ES2015 的[参数解构](https://github.com/lukehoban/es6features#destructuring)来简化代码（特别是我们需要调用 `commit` 很多次的时候）：
 
 ``` js
 actions: {
