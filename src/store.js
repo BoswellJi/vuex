@@ -82,6 +82,7 @@ export class Store {
     }
   }
 
+  // 这里使得store.state可以访问响应式state
   get state () {
     return this._state.data
   }
