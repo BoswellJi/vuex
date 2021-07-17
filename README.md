@@ -57,9 +57,3 @@ Please make sure to read the [Contributing Guide](https://github.com/vuejs/vuex/
 [MIT](http://opensource.org/licenses/MIT)
 
 Copyright (c) 2015-present Evan You
-
-
-## vuex核心
-
-* store/仓库：集中式存储管理，相应规则`mutation/可变的`保证状态以一种可预测的方式发生变化；
-* module/模块：当store对象变得相当臃肿时，为了解决这个问题，vuex允许将store分割成模块，每个模块都有state,mutation,action,getter,module;
