@@ -85,9 +85,25 @@ const mutations = {
 }
 
 export default {
-  namespaced: true,
+  // namespaced: true,
   state,
   getters,
   actions,
-  mutations
+  mutations,
+  modules:{
+    cart1:{
+      // namespaced: true,
+      state:{cart1Name:true},
+      getters:{
+        // cart1Fn1: (state, getters, rootState) => {
+          
+        // },
+      },
+      mutations:{
+        cart1MutationFn1(state){
+          console.log(state);
+        }
+      },
+    }
+  }
 }

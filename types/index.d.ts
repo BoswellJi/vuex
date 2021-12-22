@@ -9,6 +9,7 @@ import createLogger from "./logger";
 export * from "./helpers";
 export * from "./logger";
 
+// 模块类型定义
 export declare class Store<S> {
   constructor(options: StoreOptions<S>);
 

@@ -27,13 +27,21 @@ export class Store {
 
     // store internal state
     this._committing = false
+    
+    // 行为容器
     this._actions = Object.create(null)
+    
     this._actionSubscribers = []
+    
+    // 可变容器
     this._mutations = Object.create(null)
+    
     this._wrappedGetters = Object.create(null)
+    // store module tree
     this._modules = new ModuleCollection(options)
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
+    // 这里new Vue()
     this._watcherVM = new Vue()
     this._makeLocalGettersCache = Object.create(null)
 
@@ -52,23 +60,30 @@ export class Store {
 
     const state = this._modules.root.state
 
-    // init root module.
-    // this also recursively registers all sub-modules
-    // and collects all module getters inside this._wrappedGetters
+    // init root module. 
+    // this also recursively registers all sub-modules 
+    // and collects all module getters inside this._wrappedGetters, 
+    
+    // getters,actions,mutations的整理
     installModule(this, state, [], this._modules.root)
 
     // initialize the store vm, which is responsible for the reactivity
     // (also registers _wrappedGetters as computed properties)
+
+    // 将vuex 中的state处理为响应式对象
     resetStoreVM(this, state)
 
     // apply plugins
+    // 在Vuex中应用的插件
     plugins.forEach(plugin => plugin(this))
 
+    // 是否开启开发工具调试 devtools不为undefined，返回配置参数 否者根据vue框架配置来
     const useDevtools = options.devtools !== undefined ? options.devtools : Vue.config.devtools
     if (useDevtools) {
       devtoolPlugin(this)
     }
   }
+
 
   get state () {
     return this._vm._data.$$state
@@ -80,6 +95,9 @@ export class Store {
     }
   }
 
+  /**
+   * 触发同步更新数据
+   */
   commit (_type, _payload, _options) {
     // check object-style commit
     const {
@@ -117,6 +135,9 @@ export class Store {
     }
   }
 
+  /**
+   * action 类型 数据
+   */
   dispatch (_type, _payload) {
     // check object-style dispatch
     const {
@@ -126,6 +147,7 @@ export class Store {
 
     const action = { type, payload }
     const entry = this._actions[type]
+    // 不存在的action 类型
     if (!entry) {
       if (__DEV__) {
         console.error(`[vuex] unknown action type: ${type}`)
@@ -194,12 +216,18 @@ export class Store {
     return this._watcherVM.$watch(() => getter(this.state, this.getters), cb, options)
   }
 
+  /**
+   * 替换State
+   */
   replaceState (state) {
     this._withCommit(() => {
       this._vm._data.$$state = state
     })
   }
 
+  /**
+   * 注册模块
+   */
   registerModule (path, rawModule, options = {}) {
     if (typeof path === 'string') path = [path]
 
@@ -208,9 +236,12 @@ export class Store {
       assert(path.length > 0, 'cannot register the root module by using registerModule.')
     }
 
+    // 调用模块集合的register方法，注册到指定路径上去
     this._modules.register(path, rawModule)
+    // store实例, state, 模块路径， 获取模块， 保护状态 
     installModule(this, this.state, path, this._modules.get(path), options.preserveState)
     // reset store to update getters...
+    // 重置storevm store实例, state
     resetStoreVM(this, this.state)
   }
 
@@ -258,7 +289,9 @@ function genericSubscribe (fn, subs, options) {
       ? subs.unshift(fn)
       : subs.push(fn)
   }
+  // 返回订阅信息，进行删除使用
   return () => {
+    // 存在就删除
     const i = subs.indexOf(fn)
     if (i > -1) {
       subs.splice(i, 1)
@@ -266,7 +299,11 @@ function genericSubscribe (fn, subs, options) {
   }
 }
 
+/**
+ * 重置仓库
+ */
 function resetStore (store, hot) {
+  // 
   store._actions = Object.create(null)
   store._mutations = Object.create(null)
   store._wrappedGetters = Object.create(null)
@@ -278,6 +315,9 @@ function resetStore (store, hot) {
   resetStoreVM(store, state, hot)
 }
 
+/**
+ * 重置仓库的Vue实例 store实例，根state
+ */
 function resetStoreVM (store, state, hot) {
   const oldVm = store._vm
 
@@ -299,14 +339,17 @@ function resetStoreVM (store, state, hot) {
   })
 
   // use a Vue instance to store the state tree
+  // 
   // suppress warnings just in case the user has added
   // some funky global mixins
   const silent = Vue.config.silent
   Vue.config.silent = true
+  // new Vue(): 将根state处理为响应式属性，所以变化时，$store.state.attr可以引起视图变更
   store._vm = new Vue({
     data: {
       $$state: state
     },
+    // getter被直接当作计算属性
     computed
   })
   Vue.config.silent = silent
@@ -328,11 +371,17 @@ function resetStoreVM (store, state, hot) {
   }
 }
 
+/**
+ * 安装模块 store实例，根state,当前模块path,根模块（包含_children模块
+ * 
+ * path:就是模块名,根级为[],二级为['','two level','three level']等等
+ */
 function installModule (store, rootState, path, module, hot) {
+  // 没有路径
   const isRoot = !path.length
   const namespace = store._modules.getNamespace(path)
 
-  // register in namespace map
+  // register in namespace map，用户配置中的字段namespaced
   if (module.namespaced) {
     if (store._modulesNamespaceMap[namespace] && __DEV__) {
       console.error(`[vuex] duplicate namespace ${namespace} for the namespaced module ${path.join('/')}`)
@@ -340,24 +389,34 @@ function installModule (store, rootState, path, module, hot) {
     store._modulesNamespaceMap[namespace] = module
   }
 
-  // set state
   if (!isRoot && !hot) {
+    // 获取嵌套下的父模块状态 [a,b] 根据路径找到b模块的父模块a的state
     const parentState = getNestedState(rootState, path.slice(0, -1))
+    // 获取最后一个模块名(即为指定的模块名称)
     const moduleName = path[path.length - 1]
     store._withCommit(() => {
       if (__DEV__) {
         if (moduleName in parentState) {
+          // 某模块的state 字段，被一个模块使用相同的名称重写了
           console.warn(
             `[vuex] state field "${moduleName}" was overridden by a module with the same name at "${path.join('.')}"`
           )
         }
       }
+      // 给父模块状态设置子类模块名的成员
       Vue.set(parentState, moduleName, module.state)
     })
   }
 
+  // Store实例 名称空间 路径
+  /**
+   * { dispatch, commit,getters, state  } 对象
+   */
   const local = module.context = makeLocalContext(store, namespace, path)
 
+  /***
+   * 将mutation，active,getter的方法添加到一个数组中
+   */
   module.forEachMutation((mutation, key) => {
     const namespacedType = namespace + key
     registerMutation(store, namespacedType, mutation, local)
@@ -374,6 +433,7 @@ function installModule (store, rootState, path, module, hot) {
     registerGetter(store, namespacedType, getter, local)
   })
 
+  // 递归安装模块，root -> _children
   module.forEachChild((child, key) => {
     installModule(store, rootState, path.concat(key), child, hot)
   })
@@ -387,22 +447,29 @@ function makeLocalContext (store, namespace, path) {
   const noNamespace = namespace === ''
 
   const local = {
+    // 发送事件 没有名称空间 ？ 直接调用dispatch  : 有名臣空间
     dispatch: noNamespace ? store.dispatch : (_type, _payload, _options) => {
+      // 统一对象风格
       const args = unifyObjectStyle(_type, _payload, _options)
+      // 获取对象
       const { payload, options } = args
+      // dispatch类型
       let { type } = args
-
+      /**
+       * options 不存在 || options不存在root属性
+       */
       if (!options || !options.root) {
+        // 
         type = namespace + type
         if (__DEV__ && !store._actions[type]) {
           console.error(`[vuex] unknown local action type: ${args.type}, global type: ${type}`)
           return
         }
       }
-
+      // dispatch('moduleName/actionName')
       return store.dispatch(type, payload)
     },
-
+    // 提交
     commit: noNamespace ? store.commit : (_type, _payload, _options) => {
       const args = unifyObjectStyle(_type, _payload, _options)
       const { payload, options } = args
@@ -415,19 +482,21 @@ function makeLocalContext (store, namespace, path) {
           return
         }
       }
-
+      // 执行提交
       store.commit(type, payload, options)
     }
   }
 
   // getters and state object must be gotten lazily
   // because they will be changed by vm update
+  // 给local定义 getters属性和state属性
   Object.defineProperties(local, {
     getters: {
       get: noNamespace
         ? () => store.getters
         : () => makeLocalGetters(store, namespace)
     },
+    // this.$store.state.a.
     state: {
       get: () => getNestedState(store.state, path)
     }
@@ -437,30 +506,42 @@ function makeLocalContext (store, namespace, path) {
 }
 
 function makeLocalGetters (store, namespace) {
+  // getters缓存中不存在的名称空间
   if (!store._makeLocalGettersCache[namespace]) {
+    // 声明gettersProxy 对象
     const gettersProxy = {}
+    // 获取名称空间的长度
     const splitPos = namespace.length
+    // 获取getters的key,进行对象遍历
     Object.keys(store.getters).forEach(type => {
       // skip if the target getter is not match this namespace
+      // 判断名称空间，不行同的直接返回
       if (type.slice(0, splitPos) !== namespace) return
 
       // extract local getter type
+      // getter的键
       const localType = type.slice(splitPos)
 
       // Add a port to the getters proxy.
       // Define as getter property because
       // we do not want to evaluate the getters in this time.
+      // 将getter键定义到gettersProxy上
       Object.defineProperty(gettersProxy, localType, {
+        // 还是从store.getters上获取
         get: () => store.getters[type],
         enumerable: true
       })
     })
+    // 将getters对象赋值给名称空间属性
     store._makeLocalGettersCache[namespace] = gettersProxy
   }
-
+// 返回
   return store._makeLocalGettersCache[namespace]
 }
 
+/**
+ * 注册突变，将用户定义的mutation方法包裹起来
+ */
 function registerMutation (store, type, handler, local) {
   const entry = store._mutations[type] || (store._mutations[type] = [])
   entry.push(function wrappedMutationHandler (payload) {
@@ -468,6 +549,9 @@ function registerMutation (store, type, handler, local) {
   })
 }
 
+/**
+ * 注册action，将用户定义的action方法包裹起来
+ */
 function registerAction (store, type, handler, local) {
   const entry = store._actions[type] || (store._actions[type] = [])
   entry.push(function wrappedActionHandler (payload) {
@@ -493,14 +577,20 @@ function registerAction (store, type, handler, local) {
   })
 }
 
+/**
+ * 将用户自定义的getter方法包裹起来
+ */
 function registerGetter (store, type, rawGetter, local) {
+  // 获取store的包裹的Getter对象中的某个（名称空间+键）存在
   if (store._wrappedGetters[type]) {
     if (__DEV__) {
       console.error(`[vuex] duplicate getter key: ${type}`)
     }
     return
   }
+  // 没有就新增这个getter
   store._wrappedGetters[type] = function wrappedGetter (store) {
+    // Getter配置中的参数，内部状态
     return rawGetter(
       local.state, // local state
       local.getters, // local getters
@@ -510,7 +600,12 @@ function registerGetter (store, type, rawGetter, local) {
   }
 }
 
+/**
+ * 启用严格模式
+ * @param {*} store Store实例
+ */
 function enableStrictMode (store) {
+  // Vue 监听 store 的state 变化，对返回值进行依赖收集
   store._vm.$watch(function () { return this._data.$$state }, () => {
     if (__DEV__) {
       assert(store._committing, `do not mutate vuex store state outside mutation handlers.`)
@@ -518,11 +613,23 @@ function enableStrictMode (store) {
   }, { deep: true, sync: true })
 }
 
+/**
+ * 获取嵌套的state
+ * @param {*} state 
+ * @param {*} path 
+ */
 function getNestedState (state, path) {
   return path.reduce((state, key) => state[key], state)
 }
 
+/**
+ * 统一对象风格
+ * @param {*} type 
+ * @param {*} payload 
+ * @param {*} options 
+ */
 function unifyObjectStyle (type, payload, options) {
+  // 是对象 && 存在type属性
   if (isObject(type) && type.type) {
     options = payload
     payload = type
@@ -532,7 +639,7 @@ function unifyObjectStyle (type, payload, options) {
   if (__DEV__) {
     assert(typeof type === 'string', `expects string as the type, but found ${typeof type}.`)
   }
-
+  // 返回统一的dispatch数据
   return { type, payload, options }
 }
 
@@ -545,6 +652,8 @@ export function install (_Vue) {
     }
     return
   }
+  
   Vue = _Vue
+  
   applyMixin(Vue)
 }

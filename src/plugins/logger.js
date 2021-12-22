@@ -14,6 +14,7 @@ export default function createLogger ({
   logger = console
 } = {}) {
   return store => {
+    // 拷贝当前的状态对象
     let prevState = deepCopy(store.state)
 
     if (typeof logger === 'undefined') {
@@ -83,9 +84,10 @@ function getFormattedTime () {
 }
 
 function repeat (str, times) {
+  // 将指定数量的数组的空元素进行连接
   return (new Array(times + 1)).join(str)
 }
-
+// 给数字填充0
 function pad (num, maxLength) {
   return repeat('0', maxLength - num.toString().length) + num
 }

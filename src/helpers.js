@@ -46,7 +46,7 @@ export const mapMutations = normalizeNamespace((namespace, mutations) => {
   }
   normalizeMap(mutations).forEach(({ key, val }) => {
     res[key] = function mappedMutation (...args) {
-      // Get the commit method from store
+      // Get the commit method from store  
       let commit = this.$store.commit
       if (namespace) {
         const module = getModuleByNamespace(this.$store, 'mapMutations', namespace)

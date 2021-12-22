@@ -54,5 +54,6 @@ export default new Vuex.Store({
   state,
   getters,
   actions,
-  mutations
+  mutations,
+  devtools: false
 })
